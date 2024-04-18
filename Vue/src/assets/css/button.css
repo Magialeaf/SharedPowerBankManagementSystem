@@ -1,0 +1,42 @@
+/* button styles */
+.extern-button {
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #7e97b8;
+    background-color: #e0e8ef;
+    border-style: solid;
+    border-width: 2px 2px 2px 2px;
+    border-color: rgba(255, 255, 255, 0.333);
+    border-radius: 10px;
+    transform: translate(0px, 0px) rotate(0deg);
+    transition: 0.2s;
+    box-shadow:
+      -4px -2px 16px 0px #ffffff,
+      4px 2px 16px 0px rgb(95 157 231 / 48%);
+  }
+  
+  .extern-button:hover {
+    background-position: right center;
+    background-size: 200% auto;
+    -webkit-animation: pulse 2s infinite;
+    animation: pulse512 1.5s infinite;
+  }
+  
+  @keyframes pulse512 {
+    0% {
+      box-shadow: 0 0 0 0 #05bada66;
+    }
+  
+    70% {
+      box-shadow: 0 0 0 10px rgb(218 103 68 / 0%);
+    }
+  
+    100% {
+      box-shadow: 0 0 0 0 rgb(218 103 68 / 0%);
+    }
+  }
+  

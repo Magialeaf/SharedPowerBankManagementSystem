@@ -1,0 +1,12 @@
+/* scroll styles*/
+::-webkit-scrollbar {
+    width: 10px; /*大小*/
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: #14c6d3; /* 颜色 */
+    border-radius: 5px; /* 圆角 */
+  }
+  ::-webkit-scrollbar-track {
+    background-color: #f1f1f1; /* 背景色 */
+  }
+  
