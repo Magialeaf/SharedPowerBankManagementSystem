@@ -9,14 +9,14 @@
       <div class="search-area">
         <SelectArea tip="搜索" :codeList="codeList" @areaSelected="handleSelect" />
         <el-button class="search-btn" type="primary" @click="clearCode()">清空</el-button>
-        <Search @search="handleSearch" />
+        <Search @search="handleSearch" searchTip="搜索名称、描述" />
       </div>
     </div>
   </div>
   <div v-if="!ifAddNewArea" class="area-list">
     <AreaList :areaData="areaList" />
     <div class="pagination">
-      <Pagination :pageInfo="areaStore.getPageInfo()" @pageChange="handlePageChange" />
+      <Pagination :pageInfo="areaStore.getPageInfo()" @page-change="handlePageChange" />
     </div>
   </div>
   <AddNewArea v-else />
@@ -62,7 +62,6 @@ function switchAddNewArea() {
 }
 
 function handlePageChange(page) {
-  areaStore.getPageInfo().currentPage = page
   if (searchKey.value) {
     areaStore
       .getAreaList(page, {

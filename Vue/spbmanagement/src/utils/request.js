@@ -14,7 +14,6 @@ import 'nprogress/nprogress.css'
 
 import { useJwtTokenStore } from '@/stores/authenticationStore.js'
 import router from '@/router/index.js'
-import { $errorMsg } from './msg'
 
 // 超时设置
 const instance = axios.create({

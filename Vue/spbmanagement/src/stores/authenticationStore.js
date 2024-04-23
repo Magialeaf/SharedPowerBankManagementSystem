@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-export const useIdentityStore = defineStore('IdentityStudio', () => {
-  const SuperAdmin = 0
+export const useIdentityStore = defineStore('Identity', () => {
+  // const SuperAdmin = 0
   const Admin = 1
   const Maintainer = 10
   const User = 11
@@ -12,20 +12,30 @@ export const useIdentityStore = defineStore('IdentityStudio', () => {
     超级管理员: 0,
     管理员: 1,
     运维人员: 10,
-    普通用户: 11,
-    匿名用户: 100
+    普通用户: 11
+    // 匿名用户: 100
   })
 
   const identityList = ref({
     0: '超级管理员',
     1: '管理员',
     10: '运维人员',
-    11: '普通用户',
-    100: '匿名用户'
+    11: '普通用户'
+    // 100: '匿名用户'
+  })
+
+  const canModifyIdentityList = ref({
+    1: '管理员',
+    10: '运维人员',
+    11: '普通用户'
   })
 
   function getIdentityList() {
     return identityList.value
+  }
+
+  function getCanModifyIdentityList() {
+    return canModifyIdentityList.value
   }
 
   const getIdentity = (identityId) => {
@@ -39,12 +49,13 @@ export const useIdentityStore = defineStore('IdentityStudio', () => {
   }
 
   return {
-    SuperAdmin,
+    // SuperAdmin,
     Admin,
     Maintainer,
     User,
-    Anon,
+    // Anon,
     getIdentity,
+    getCanModifyIdentityList,
     getIdentityCode,
     getIdentityList
   }

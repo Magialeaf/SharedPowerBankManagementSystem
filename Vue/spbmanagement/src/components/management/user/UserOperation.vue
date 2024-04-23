@@ -46,7 +46,6 @@ import { ref, computed, defineEmits } from 'vue'
 import { convertSexNameToCode } from '@/utils/convert'
 import { useUserStore } from '@/stores/userStore'
 import { lockFunction } from '@/utils/myLock'
-import { userAvatarURL } from '@/api/path'
 import UploadImg from '@/components/management/utils/UploadImg.vue'
 
 const prop = defineProps({

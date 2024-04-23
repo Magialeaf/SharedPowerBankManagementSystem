@@ -6,12 +6,12 @@ import {
   createAreaAPI,
   updateAreaAPI,
   deleteAreaAPI,
-  getAreaListAPI
+  getAreaListAPI,
+  getAreaNameListAPI
 } from '@/api/areaAPI'
 import { createPageInfo } from '@/stores/pageInfo.js'
 import { $errorMsg, $successMsg } from '@/utils/msg.js'
 import { regionData } from 'element-china-area-data'
-import { lockFunction } from '@/utils/myLock.js'
 import { jsonp } from 'vue-jsonp'
 
 export const useAreaStore = defineStore('areaList', () => {
@@ -76,6 +76,13 @@ export const useAreaStore = defineStore('areaList', () => {
       .catch(handleApiError)
   }
 
+  // 获得区域名称列表
+  const getAreaNameList = (code, ifMsg = true) => {
+    return getAreaNameListAPI({ code: code })
+      .then((res) => res)
+      .catch((e) => handleApiError(e, ifMsg))
+  }
+
   // 创建区域
   const createArea = (data = {}, ifRefresh = true) => {
     return createAreaAPI(data)
@@ -105,8 +112,8 @@ export const useAreaStore = defineStore('areaList', () => {
     return res
   }
 
-  const handleApiError = (error) => {
-    $errorMsg(error.message)
+  const handleApiError = (error, ifMsg = true) => {
+    if (ifMsg) $errorMsg(error.message)
     throw error
   }
 
@@ -129,6 +136,7 @@ export const useAreaStore = defineStore('areaList', () => {
     getArea,
     getAreaByLatAndLon,
     getAreaList,
+    getAreaNameList,
     createArea,
     updateArea,
     deleteArea,

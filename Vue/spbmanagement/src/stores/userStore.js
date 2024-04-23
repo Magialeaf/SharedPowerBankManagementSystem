@@ -13,18 +13,24 @@ import {
   uploadAvatarAPI,
   updateUserIdentityAPI
 } from '@/api/userAPI.js'
+import { useAddressStore } from '@/stores/areaStore.js'
 import { createPageInfo } from '@/stores/pageInfo.js'
 import { useIdentityStore } from './authenticationStore'
 
 export const useUserStore = defineStore('userList', () => {
+  const defaultAvatarURL = ref('http://127.0.0.1:8000/media/images/user_avatars/default.png')
   const userList = ref()
   const constConditions = ref({
     table: 'user',
     identity: -1
   })
+  const inputConditions = ref({})
   const getConditions = ref()
 
   const pageInfo = ref(createPageInfo())
+
+  const addressStore = useAddressStore()
+  const identityStore = useIdentityStore()
 
   const getList = () => {
     return userList.value
@@ -36,7 +42,7 @@ export const useUserStore = defineStore('userList', () => {
   // 初始化数据
   const initUserList = (identity) => {
     constConditions.value.identity = identity
-    return getUserList(pageInfo.value.currentPage)
+    return getUserList(pageInfo.value.currentPage, {})
   }
 
   // 获得个人信息
@@ -72,8 +78,9 @@ export const useUserStore = defineStore('userList', () => {
   }
 
   // 创建单个用户和账户信息
-  function createOneInfo(id, data = {}) {
-    return createOneInfoAPI(id, data)
+  function createOneInfo(data = {}) {
+    data.identity = identityStore.getIdentityCode(data.identity)
+    return createOneInfoAPI(data)
       .then((res) => handleApiSuccess(res, false))
       .catch(handleApiError)
   }
@@ -93,15 +100,19 @@ export const useUserStore = defineStore('userList', () => {
   }
 
   // 获取用户列表
-  function getUserList(page, conditions = {}) {
+  function getUserList(page = pageInfo.value.currentPage, conditions = inputConditions.value) {
     pageInfo.value.currentPage = page
-    getConditions.value = { ...conditions, ...constConditions.value }
+    inputConditions.value = conditions
+    getConditions.value = { ...inputConditions.value, ...constConditions.value }
     return getUserListAPI(page, getConditions.value)
       .then((res) => {
         userList.value = res.data
-        // pageInfo.value.total = res.extra.total
-        // pageInfo.value.pageSize = res.extra.pageSize
-        // pageInfo.value.pageCount = Math.ceil(pageInfo.value.total / pageInfo.value.pageSize)
+        pageInfo.value.total = res.extra.total
+        pageInfo.value.pageSize = res.extra.pageSize
+        pageInfo.value.pageCount = Math.ceil(pageInfo.value.total / pageInfo.value.pageSize)
+        if (constConditions.value.identity === identityStore.Maintainer) {
+          maintainOptions()
+        }
         return res
       })
       .catch(handleApiError)
@@ -114,10 +125,29 @@ export const useUserStore = defineStore('userList', () => {
       .catch(handleApiError)
   }
 
+  function maintainOptions() {
+    userList.value.forEach((user) => {
+      user.maintain_areas = ''
+      for (let i = 0; i < user.areas.length; i++) {
+        if (user.areas[i].slice(0, 6) === '000000') continue
+        const codeList = [
+          user.areas[i].slice(0, 2),
+          user.areas[i].slice(0, 4),
+          user.areas[i].slice(0, 6)
+        ]
+        const name = user.areas[i].slice(7)
+        const addressList = addressStore.codeListToAddrList(codeList)
+        const area = addressList.reduce((pre, cur) => pre + cur) + name
+        user.maintain_areas += area + '，'
+      }
+      user.maintain_areas = user.maintain_areas.slice(0, -1)
+    })
+  }
+
   const handleApiSuccess = (res, ifRefresh = false) => {
     $successMsg(res.message)
     if (ifRefresh) {
-      getUserList(pageInfo.value.currentPage, getConditions.value)
+      getUserList(pageInfo.value.currentPage, inputConditions.value)
     }
     return res
   }
@@ -128,6 +158,7 @@ export const useUserStore = defineStore('userList', () => {
   }
 
   return {
+    defaultAvatarURL,
     getList,
     getPageInfo,
     initUserList,

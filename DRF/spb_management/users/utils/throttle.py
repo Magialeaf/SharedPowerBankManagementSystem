@@ -24,3 +24,8 @@ class OneThrottle(AnonThrottle):
 class UserAvatarThrottle(AuthThrottle):
     scope = "user_avatar"
     THROTTLE_RATES = {scope: "10/m"}
+
+
+class MaintainThrottle(AuthThrottle):
+    scope = "maintain"
+    THROTTLE_RATES = {scope: "15/m"}

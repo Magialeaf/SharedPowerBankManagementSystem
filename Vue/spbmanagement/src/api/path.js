@@ -18,15 +18,18 @@ export const merchantImgURL = v1 + '/merchant/img/'
 // DRF: power_bank
 
 // DRF: system_administration
+export const carouselChartURL = v1 + '/system-administration/carousel-chart/'
+export const carouselChartImgURL = v1 + '/system-administration/carousel-chart/img/'
 
 // DRF：users
 export const enterURL = v1 + '/enter/'
 export const captchaURL = v1 + '/captcha/'
-export const myInfoURL = v1 + '/myInfo/'
-export const oneInfoURL = v1 + '/oneInfo/'
+export const myInfoURL = v1 + '/my-info/'
+export const oneInfoURL = v1 + '/one-info/'
 export const userURL = v1 + '/user/'
 export const accountURL = v1 + '/account/'
 export const userAvatarURL = v1 + '/user/avatar/'
+export const maintainURL = v1 + '/maintain/'
 
 // Operation
 export function switchVersion(url, targetVersion) {

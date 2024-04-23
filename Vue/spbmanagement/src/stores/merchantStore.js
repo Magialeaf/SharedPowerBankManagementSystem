@@ -10,12 +10,14 @@ import {
 } from '@/api/merchantAPI'
 import { createPageInfo } from '@/stores/pageInfo.js'
 import { $successMsg, $errorMsg } from '@/utils/msg'
+import { useAddressStore } from '@/stores/areaStore.js'
 
 export const useMerchantStore = defineStore('merchantList', () => {
+  const addressStore = useAddressStore()
+
   const merchantList = ref()
 
   const getConditions = ref({})
-
   const pageInfo = ref(createPageInfo())
 
   const getList = () => {
@@ -34,7 +36,14 @@ export const useMerchantStore = defineStore('merchantList', () => {
   // 通过ID获得区域
   const getMerchant = (id) => {
     return getMerchantAPI(id)
-      .then((res) => res)
+      .then((res) => {
+        res.data.areaCodeList = [
+          res.data.area_data.slice(0, 2),
+          res.data.area_data.slice(0, 4),
+          res.data.area_data.slice(0, 6)
+        ]
+        return res
+      })
       .catch((error) => {
         throw error
       })
@@ -57,7 +66,7 @@ export const useMerchantStore = defineStore('merchantList', () => {
   }
 
   // 创建区域
-  const createMerchant = (data = {}, ifRefresh = true) => {
+  const createMerchant = (data = {}, ifRefresh = false) => {
     return createMerchantAPI(data)
       .then((res) => handleApiSuccess(res, ifRefresh))
       .catch(handleApiError)
@@ -65,6 +74,9 @@ export const useMerchantStore = defineStore('merchantList', () => {
 
   // 修改区域
   const updateMerchant = (id, data = {}, ifRefresh = true) => {
+    if (data.area_data) delete data.area_data
+    if (data.areaCodeList) delete data.areaCodeList
+
     return updateMerchantAPI(id, data)
       .then((res) => handleApiSuccess(res, ifRefresh))
       .catch(handleApiError)
@@ -98,7 +110,17 @@ export const useMerchantStore = defineStore('merchantList', () => {
     throw error
   }
 
-  const extraOperateList = () => {}
+  const extraOperateList = () => {
+    merchantList.value.forEach((item) => {
+      const addrList = addressStore.codeListToAddrList([
+        item.area_data.slice(0, 2),
+        item.area_data.slice(0, 4),
+        item.area_data.slice(0, 6)
+      ])
+
+      item.areaName = addrList.reduce((pre, cur) => pre + cur) + item.area_data.slice(7)
+    })
+  }
 
   return {
     getList,

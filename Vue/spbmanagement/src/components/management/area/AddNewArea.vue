@@ -128,6 +128,11 @@ function getAreaFromAPI() {
     .getAreaByLatAndLon(areaInfo.value.latitude, areaInfo.value.longitude)
     .then((res) => {
       areaInfo.value = res.data
+      codeList.value = [
+        areaInfo.value.code.slice(0, 2),
+        areaInfo.value.code.slice(0, 4),
+        areaInfo.value.code
+      ]
       ifHaveArea.value = true
       return true
     })
@@ -136,6 +141,7 @@ function getAreaFromAPI() {
       areaInfo.value.id = -1
       areaInfo.value.name = ''
       areaInfo.value.description = ''
+      codeList.value = ['00', '0000', '000000']
       return false
     })
 }

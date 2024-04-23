@@ -246,7 +246,7 @@ REST_FRAMEWORK = {
     # 默认匿名的权限
     "DEFAULT_PERMISSION_CLASSES": ["spb_management.router.permission.NotAnonPermission", ],
 
-    # 404异常处理
+    # 异常处理
     'EXCEPTION_HANDLER': 'spb_management.utils.my_exception.common_exception_handler',
 
     # 请求的参数名

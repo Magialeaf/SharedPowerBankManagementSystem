@@ -60,7 +60,7 @@
     <el-form-item v-if="accountInfo.id" label="邮箱">
       <el-input v-model="accountInfo.email" />
     </el-form-item>
-    <el-form-item v-if="accountInfo.id" label="验证码">
+    <el-form-item v-if="accountInfo.id && ifMyself" label="验证码">
       <CaptchaInput :email="accountInfo.email" @captcha-value="handleCaptchaUpdated"
     /></el-form-item>
     <el-form-item v-if="accountInfo.id">
@@ -83,7 +83,7 @@
       <el-form-item v-if="accountInfo.id" label="身份">
         <el-select v-model="accountInfo.identity" placeholder="请选择身份">
           <el-option
-            v-for="item in identityStore.getIdentityList()"
+            v-for="item in identityStore.getCanModifyIdentityList()"
             :key="item"
             :label="item"
             :value="item"
@@ -100,25 +100,44 @@
       </el-form-item>
     </div>
   </el-form>
+
+  <el-form
+    v-if="accountInfo.id && ifMyself"
+    class="form-item"
+    label-position="left"
+    label-width="20%"
+    :model="accountInfo"
+    style="max-width: 600px"
+  >
+    <el-form-item>
+      <el-button type="warning" @click="deleteMyself()">注销账户</el-button>
+    </el-form-item>
+  </el-form>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { $confirmDeleteMsg, $successMsg } from '@/utils/msg'
 import { useIdentityStore, useJwtTokenStore } from '@/stores/authenticationStore'
-import { useAccountStore } from '@/stores/userStore'
+import { useUserStore, useAccountStore } from '@/stores/userStore'
 import { lockFunction } from '@/utils/myLock'
 import { RSAEncode } from '@/utils/myCrypto'
 import {
   validate_account,
   validate_confirmPassword,
   validate_password,
-  validate_email
+  validate_email,
+  validate_captcha
 } from '@/utils/validateUser'
 import CaptchaInput from '@/components/enter/CaptchaInput.vue'
 
 const identityStore = useIdentityStore()
 const jwtTokenStore = useJwtTokenStore()
+const userStore = useUserStore()
 const accountStore = useAccountStore()
+
+const router = useRouter()
 
 const ifMyself = computed(() => prop.ifMyself)
 const accountInfo = computed(() => prop.accountData)
@@ -183,6 +202,7 @@ const updatePasswordInfo = lockFunction()(() => {
 const updateEmailInfo = lockFunction()(() => {
   if (!validate_email(accountInfo.value.email)) return false
   if (ifMyself.value) {
+    if (!validate_captcha(captchaValue.value)) return false
     accountStore
       .updateMyEmail(accountInfo.value.email, captchaValue.value)
       .then((res) => {
@@ -205,6 +225,18 @@ const updateIdentityInfo = lockFunction()(() => {
     .then((res) => {})
     .catch((err) => {})
 })
+
+function deleteMyself() {
+  $confirmDeleteMsg('确定要注销账号吗？注销后将无法恢复账号！')
+    .then(() => {
+      userStore.deleteMyInfo().then(() => {
+        jwtTokenStore.clearJwtToken()
+        $successMsg('注销成功')
+        router.push('/enter/')
+      })
+    })
+    .then((e) => {})
+}
 </script>
 
 <style scoped>

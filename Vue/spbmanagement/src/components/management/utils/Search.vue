@@ -1,6 +1,6 @@
 <template>
   <label class="search">
-    <el-input v-model="searchKeyword" placeholder="请输入关键词进行搜索" />
+    <el-input v-model="searchKeyword" :placeholder="props.searchTip" />
     <el-button type="info" @click="handleSearch"
       ><el-icon
         ><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" data-v-ea893728="">
@@ -13,12 +13,19 @@
 </template>
 
 <script setup>
-import { ref, defineEmits } from 'vue'
+import { ref, defineEmits, defineProps } from 'vue'
 import { lockFunction } from '@/utils/myLock'
 
 const emits = defineEmits(['search'])
 
 const searchKeyword = ref('')
+
+const props = defineProps({
+  searchTip: {
+    type: String,
+    default: '请输入关键词进行搜索'
+  }
+})
 
 const handleSearch = lockFunction(1000)(() => {
   emits('search', searchKeyword.value)

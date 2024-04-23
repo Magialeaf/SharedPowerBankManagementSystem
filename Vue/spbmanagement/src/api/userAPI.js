@@ -24,7 +24,7 @@ export const deleteMyInfoAPI = (conditions = {}) => deleteAPI(myInfoURL, conditi
 export const getOneInfoAPI = (id) => getByPkAPI(oneInfoURL, id)
 
 // 新增单个用户和账户信息
-export const createOneInfoAPI = (id, data = {}) => createByPkAPI(oneInfoURL, id, data)
+export const createOneInfoAPI = (data = {}) => createByPkAPI(oneInfoURL, 0, data)
 
 // 修改单个用户和账户信息
 export const updateOneInfoAPI = (id, conditions = {}, data = {}) =>

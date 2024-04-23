@@ -131,6 +131,12 @@ const routes = [
         name: 'manage-notice',
         meta: { requiresAuth: true },
         component: () => import('@/components/management/aside/Notice.vue')
+      },
+      {
+        path: 'manage-carousel-chart',
+        name: 'manage-carousel-chart',
+        meta: { requiresAuth: true },
+        component: () => import('@/components/management/aside/CarouselChart.vue')
       }
     ]
   },

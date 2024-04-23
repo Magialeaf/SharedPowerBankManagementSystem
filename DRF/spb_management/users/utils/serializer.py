@@ -7,10 +7,11 @@ import re
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from areas.utils.area import get_area_code
 from spb_management.router.image_operation import ImgAPI
 from spb_management.utils.my_crypto import HashFunc, RSAFunc
 from spb_management.utils.my_exception import validation_exception
-from users.models import AccountInfo, UserInfo, Identity
+from users.models import AccountInfo, UserInfo, Identity, MaintainInfo
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -79,11 +80,16 @@ class LoginByAccountSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(allow_blank=True, max_length=20, error_messages={'max_length': '用户名长度不能超过 20 个字符。'})
+    sex = serializers.IntegerField(error_messages={'required': "缺少性别"})
+    profile = serializers.CharField(allow_blank=True, max_length=100, error_messages={'max_length': '个人简介长度不能超过 100 个字符。'})
+    birthday = serializers.DateField(error_messages={'required': "缺少生日"})
     avatar = serializers.CharField(allow_blank=True)
+    aid_id = serializers.IntegerField(error_messages={'required': "缺少aid"})
 
     class Meta:
         model = UserInfo
-        fields = ('id', 'username', 'sex', 'profile', 'avatar', 'birthday')
+        fields = ('id', 'username', 'sex', 'profile', 'avatar', 'birthday', 'aid_id')
 
     def validate_avatar(self, value):
         url = ImgAPI.get_avatar(value)
@@ -94,6 +100,15 @@ class UserSerializer(serializers.ModelSerializer):
             return value
         except ValueError as e:
             raise validation_exception(e)
+
+    def create(self, validated_data):
+        if validated_data['username'] == '':
+            validated_data['username'] = '新用户'
+        if validated_data['profile'] == '':
+            validated_data['profile'] = '这个用户很懒，什么也没有写'
+        if validated_data['avatar'] == '':
+            validated_data['avatar'] = "default.png"
+        return UserInfo.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         instance.username = validated_data.get('username', instance.username)
@@ -113,7 +128,6 @@ class UserSerializer(serializers.ModelSerializer):
         res["avatar"] = ImgAPI.get_avatar(res["avatar"])
         return res
 
-
     def to_representation(self, instance):
         avatar = instance.avatar
         structured_data = super().to_representation(instance)
@@ -124,13 +138,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AccountSerializer(serializers.ModelSerializer):
+    account = serializers.CharField(max_length=15, error_messages={'max_length': '账号长度不能超过 15 个字符。'})
     password = serializers.CharField(max_length=350, error_messages={'max_length': '密码长度不能超过 350 个字符。'})
     identity = serializers.CharField(error_messages={'required': "缺少身份"})
-    captcha = serializers.CharField(write_only=True)  # 添加captcha字段，仅用于写入（更新）
+    email = serializers.EmailField(error_messages={'required': "缺少邮箱"})
 
     class Meta:
         model = AccountInfo
-        fields = ('id', 'account', 'password', 'email', 'identity', 'last_login_time', 'create_time', 'captcha')  # 添加captcha到fields列表
+        fields = ('id', 'account', 'password', 'email', 'identity', 'last_login_time', 'create_time')
 
     def validate_account(self, value):
         if not re.match('^[a-zA-Z]\w{2,14}$', value):
@@ -142,7 +157,8 @@ class AccountSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('新账户名和老账户名一致')
 
         # 检查是否有其他用户使用了相同的账户名
-        if AccountInfo.objects.exclude(id=self.instance.id).filter(account=value).exists():  # 排除当前用户（如果存在）
+        id = self.instance.id if self.instance else None
+        if AccountInfo.objects.exclude(id=id).filter(account=value).exists():  # 排除当前用户（如果存在）
             raise serializers.ValidationError('账户名已存在')
 
         return value
@@ -157,9 +173,10 @@ class AccountSerializer(serializers.ModelSerializer):
         value = HashFunc.hash256(value)
 
         # 检查密码是否和原来的一样
-        query = AccountInfo.objects.filter(id=self.instance.id).values('password').first()
-        if query and query['password'] == value:
-            raise serializers.ValidationError('新密码和原密码一致')
+        if self.instance:
+            query = AccountInfo.objects.filter(id=self.instance.id).values('password').first()
+            if query and query['password'] == value:
+                raise serializers.ValidationError('新密码和原密码一致')
 
         return value
 
@@ -173,20 +190,15 @@ class AccountSerializer(serializers.ModelSerializer):
         return value
 
     def validate_identity(self, value):
-        if not Identity.is_valid_identity_code(value):
-            serializers.ValidationError(f'{value}是无效的身份')
+        code = Identity.is_valid_identity_code(int(value))
+        if not code:
+            raise serializers.ValidationError(f'无效身份')
+        if int(value) == Identity.SUPER_ADMIN.value:
+            raise serializers.ValidationError(f'无法修改为超级管理员身份')
         return value
 
-    def validate(self, attrs):
-        email = attrs.get("email", None)
-        if email:
-            captcha_key = f"captcha:{email}"
-            captcha_value = caches['user_captcha'].get(captcha_key)
-            captcha = int(attrs.get("captcha", None))
-            if not (captcha_value and captcha_value == captcha):
-                raise serializers.ValidationError({"captcha": "验证码错误"})
-
-        return attrs
+    def create(self, validated_data):
+        return AccountInfo.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         res = {'id': instance.id}
@@ -223,6 +235,37 @@ class AccountSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         structured_data = super().to_representation(instance)
-        structured_data['identity'] = Identity.get_display_name(instance.identity)
+        # if isinstance((instance))
+        # structured_data['identity'] = Identity.get_display_name(instance.identity)
 
+        return structured_data
+
+
+class MaintainSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MaintainInfo
+        fields = '__all__'  # 或者列出您想要序列化的字段
+
+    def create(self, validated_data):
+        value = validated_data.get('aid', 0)
+        count = MaintainInfo.objects.filter(aid=value).count()
+        if count >= 3:
+            raise serializers.ValidationError("一个维护人员最多维护三个区域")
+        return MaintainInfo.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.area_id = validated_data.get('area_id', instance.area_id)
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        structured_data = super().to_representation(instance)
+        if instance.area_id:
+            code = get_area_code(instance.area_id.id)
+            if code:
+                structured_data['code'] = code
+            else:
+                structured_data['code'] = '000000'
+        else:
+            structured_data['code'] = '000000'
         return structured_data

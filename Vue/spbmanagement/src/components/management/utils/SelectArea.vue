@@ -10,7 +10,7 @@
 </template>
 
 <script setup>
-import { ref, watch, defineProps, defineEmits, computed } from 'vue'
+import { ref, watch, defineProps, defineEmits, computed, onBeforeMount } from 'vue'
 import { regionData } from 'element-china-area-data'
 import { useAddressStore } from '@/stores/areaStore'
 
@@ -28,6 +28,7 @@ const tipStyles = {
 
 const selectedOptions = ref()
 const tempSelectedOptions = computed(() => props.codeList)
+
 watch(tempSelectedOptions, () => {
   selectedOptions.value = tempSelectedOptions.value
 })
@@ -37,6 +38,10 @@ function handleAreaChange(selectedOptions) {
   const selectedName = addressStore.codeListToAddrList(selectedOptions)
   emit('areaSelected', [selectedOptions, selectedName])
 }
+
+onBeforeMount(() => {
+  selectedOptions.value = tempSelectedOptions.value
+})
 </script>
 
 <style scoped></style>

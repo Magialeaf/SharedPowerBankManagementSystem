@@ -63,7 +63,7 @@ class MerchantView(GetAndPostAPIView):
         serialized_data = MerchantSerializer(query).data
         # AreaDataRedis.set_area_data(serialized_data)
         return response(ResponseCode.SUCCESS, "获取商户成功", serialized_data)
-    
+
     def get_merchant_list(self, page, conditions):
         page = page if page > 0 else 1
         items_per_page = 10
@@ -71,14 +71,14 @@ class MerchantView(GetAndPostAPIView):
 
         if conditions:
             keyword = conditions.get("keyword", None)
-            keycode = conditions.get("keycode", None)
+            keycode = conditions.get("keyAreaId", None)
             base_query = Q()
             if keyword:
                 match_fields = ['shop_name', 'address', 'liaison']
                 for field in match_fields:
                     base_query |= Q(**{f'{field}__icontains': keyword})
             if keycode:
-                base_query &= Q(code=keycode)
+                base_query &= Q(area=keycode)
             area_values = MerchantInfo.objects.filter(base_query).values()[start_index:start_index + items_per_page]
             total = MerchantInfo.objects.filter(base_query).count()
         else:
@@ -89,7 +89,6 @@ class MerchantView(GetAndPostAPIView):
             "total": total,
             "pageSize": items_per_page,
         }
-
         return response(ResponseCode.SUCCESS, "获取区域列表成功", res.data, extra=extra)
     
     def create_merchant(self, request):
@@ -105,20 +104,20 @@ class MerchantView(GetAndPostAPIView):
     
     def update_merchant(self, id_, data):
         try:
-            area_instance = MerchantInfo.objects.get(id=id_)
+            area_instance = MerchantInfo.objects.filter(id=id_).first()
         except MerchantInfo.DoesNotExist:
             return response(ResponseCode.ERROR, "商户不存在", {})
 
         ser = MerchantSerializer(area_instance, data=data, partial=True)
         try:
             ser.is_valid(raise_exception=True)
-            area_instance = ser.save()  # 使用序列化器的save方法更新实例并触发缓存操作
-            return response(ResponseCode.SUCCESS, "更新商户成功", ser.validated_data)
+            res = ser.save()
+            return response(ResponseCode.SUCCESS, "更新商户成功", res)
         except ValidationError as e:
             return validation_exception(e)
     
     def delete_merchant(self, id_):
-        query = MerchantInfo.objects.filter(id=id_).values('latitude', 'longitude').first()
+        query = MerchantInfo.objects.filter(id=id_).values().first()
         if query:
             MerchantInfo.objects.filter(id=id_).delete()
             # AreaDataRedis.delete_area_data(query)

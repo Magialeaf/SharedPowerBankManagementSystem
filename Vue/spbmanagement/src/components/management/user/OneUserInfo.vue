@@ -1,17 +1,28 @@
 <template>
   <div class="switch">
-    <el-button type="primary" @click="switchValue = !switchValue">{{
+    <el-button type="primary" @click="switchView">{{
       switchValue ? '切换至账户信息' : '切换至用户信息'
     }}</el-button>
+    <el-button
+      v-if="props.identityCode == identityStore.Maintainer"
+      type="primary"
+      @click="maintenanceValue = true"
+      >{{ '切换至区域管理' }}</el-button
+    >
   </div>
   <div class="info">
     <UserOperation
-      v-if="switchValue"
+      v-if="switchValue && !maintenanceValue"
       :userData="userInfo"
       :ifMyself="ifMyself"
       @updateUserInfo="updateUserInfo"
     />
-    <AccountOperation v-else :accountData="accountInfo" :ifMyself="ifMyself" />
+    <AccountOperation
+      v-else-if="!switchValue && !maintenanceValue"
+      :accountData="accountInfo"
+      :ifMyself="ifMyself"
+    />
+    <MaintenanceOperation v-else-if="maintenanceValue" :aid="accountInfo.id" />
   </div>
 </template>
 
@@ -19,11 +30,16 @@
 import { ref, onBeforeMount } from 'vue'
 import { convertBackendTimestampToLocalTime } from '@/utils/convert.js'
 import { useUserStore } from '@/stores/userStore'
+import { useIdentityStore } from '@/stores/authenticationStore'
+import MaintenanceOperation from '@/components/management/user/MaintenanceOperation.vue'
 import AccountOperation from '@/components/management/user/AccountOperation.vue'
 import UserOperation from '@/components/management/user/UserOperation.vue'
 
 const switchValue = ref(true)
+const maintenanceValue = ref(false)
+
 const userStore = useUserStore()
+const identityStore = useIdentityStore()
 
 const ifMyself = ref(true)
 
@@ -41,16 +57,16 @@ const userInfo = ref({
   username: '',
   avatar: '',
   profile: '',
-  birthday: '',
-  phone: ''
+  birthday: ''
 })
 
-const prop = defineProps({
-  uid: { type: Number, required: false }
+const props = defineProps({
+  uid: { type: Number, required: false },
+  identityCode: { type: Number, required: false }
 })
 
 onBeforeMount(() => {
-  if (prop.uid === undefined) {
+  if (props.uid === undefined) {
     ifMyself.value = true
     userStore
       .getMyInfo()
@@ -68,7 +84,7 @@ onBeforeMount(() => {
   } else {
     ifMyself.value = false
     userStore
-      .getOneInfo(prop.uid)
+      .getOneInfo(props.uid)
       .then((res) => {
         accountInfo.value = res.data[0]
         userInfo.value = res.data[1]
@@ -89,6 +105,11 @@ function updateUserInfo(value) {
       userInfo.value[key] = value[key]
     }
   }
+}
+
+function switchView() {
+  switchValue.value = !switchValue.value
+  maintenanceValue.value = false
 }
 </script>
 

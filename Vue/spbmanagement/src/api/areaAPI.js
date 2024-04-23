@@ -1,4 +1,4 @@
-import { getByPkAPI, createByPkAPI, updateByPkAPI, deleteByPkAPI } from './APIBase.js'
+import { getByPkAPI, createByPkAPI, updateByPkAPI, deleteByPkAPI } from '@/api/APIBase.js'
 import { areaURL } from '@/api/path.js'
 
 // 查询当前区域信息
@@ -11,6 +11,10 @@ export const getAreaByLatAndLonAPI = (latitude, longitude) =>
 // 获得当前页面区域信息
 export const getAreaListAPI = (page, conditions) =>
   getByPkAPI(areaURL, page, conditions, [], 'getList')
+
+// 获得区域名称列表
+export const getAreaNameListAPI = (conditions) =>
+  getByPkAPI(areaURL, 0, conditions, [], 'getNameList')
 
 // 新增区域
 export const createAreaAPI = (data = {}) => createByPkAPI(areaURL, 0, data)

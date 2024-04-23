@@ -1,15 +1,17 @@
 <template>
-  <el-config-provider :locale="zhCn">
-    <el-pagination
-      :current-page="prop.pageInfo.currentPage"
-      :page-size="prop.pageInfo.pageSize"
-      :total="prop.pageInfo.total"
-      :page-count="prop.pageInfo.pageCount"
-      :pager-count="prop.pageInfo.pagerCount"
-      layout="jumper, prev, pager, next, total"
-      @current-change="handlePageChange"
-    />
-  </el-config-provider>
+  <div class="pagination-container">
+    <el-config-provider :locale="zhCn">
+      <el-pagination
+        :current-page="prop.pageInfo.currentPage"
+        :page-size="prop.pageInfo.pageSize"
+        :total="prop.pageInfo.total"
+        :page-count="prop.pageInfo.pageCount"
+        :pager-count="prop.pageInfo.pagerCount"
+        layout="jumper, prev, pager, next, total"
+        @current-change="handlePageChange"
+      />
+    </el-config-provider>
+  </div>
 </template>
 
 <script setup>
@@ -37,10 +39,14 @@ const prop = defineProps({
   }
 })
 
-const emit = defineEmits(['page-change'])
+const emits = defineEmits(['page-change'])
 const handlePageChange = (page) => {
-  emit('page-change', page)
+  emits('page-change', page)
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.pagination-container {
+  margin-bottom: 10px;
+}
+</style>

@@ -2,7 +2,7 @@ from django.db.models import Q
 from rest_framework.exceptions import ValidationError
 
 from areas.models import AreaInfo
-from areas.utils.serializer import AreaSerializer
+from areas.utils.serializer import AreaSerializer, AreaNameSerializer
 from areas.utils.throttle import AreaThrottle
 from areas.utils.redis_operation import AreaDataRedis
 from spb_management.base_class.GetAndPostAPIView import GetAndPostAPIView
@@ -40,6 +40,9 @@ class AreaView(GetAndPostAPIView):
             page = kwargs.get("pk", 1)
             conditions, data = Internet.get_internet_data(request)
             return self.get_area_list(page, conditions)
+        elif action == "getNameList":
+            conditions, data = Internet.get_internet_data(request)
+            return self.get_area_name_list(conditions)
         return response(ResponseCode.ERROR, "请求参数错误", {})
 
     def post(self, request, version, **kwargs):
@@ -121,6 +124,20 @@ class AreaView(GetAndPostAPIView):
 
         return response(ResponseCode.SUCCESS, "获取区域列表成功", res.data, extra=extra)
 
+    def get_area_name_list(self, conditions):
+        if 'code' in conditions:
+            code = conditions['code']
+            area_instance = AreaInfo.objects.filter(code=code).values("id", "name")
+
+            if area_instance.exists():
+                res = AreaNameSerializer(area_instance, many=True)
+                return response(ResponseCode.SUCCESS, "获取区域列表成功", res.data)
+            else:
+                return response(ResponseCode.ERROR, "该地段没有区域存在", {})
+        else:
+            return response(ResponseCode.ERROR, "请求参数错误", {})
+
+
     def create_area(self, request):
         conditions, data = Internet.get_internet_data(request)
         ser = AreaSerializer(data=data)
@@ -129,7 +146,6 @@ class AreaView(GetAndPostAPIView):
             if ser.is_valid(raise_exception=True):
                 lat = ser.validated_data['latitude']
                 lng = ser.validated_data['longitude']
-                print(lat, lng)
                 exists, cached_data = self.get_area_data_by_lat_lng(lat, lng)
 
                 if not exists:

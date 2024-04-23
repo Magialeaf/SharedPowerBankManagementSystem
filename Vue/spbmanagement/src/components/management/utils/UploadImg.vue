@@ -14,7 +14,7 @@
   </el-upload>
 </template>
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onBeforeMount } from 'vue'
 import { $errorMsg } from '@/utils/msg'
 import { Plus } from '@element-plus/icons-vue'
 
@@ -80,7 +80,9 @@ watch(fileList, (newValue, oldValue) => {
 watch(ifUploadValue, (newValue, oldValue) => {
   if (newValue) {
     emits('updateIfUpload', false)
-    if (fileList.value.length == 0) $errorMsg('请上传头像')
+    if (url.value && fileList.value.length == 0) {
+      emits('uploadSuccess', { data: {} })
+    } else if (fileList.value.length == 0) $errorMsg('请上传图片')
     else uploadImg.value.submit()
   }
 })

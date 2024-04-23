@@ -41,9 +41,9 @@ const changeThemeColor = useChangeThemeColorStore()
 const manageMainStore = useManageMainStore()
 
 const menuItems = ref()
-const AdminHeader = ref('/management/manage-home')
 const uniqueOpenedValue = ref(true)
 const route = useRoute()
+const AdminHeader = ref(route.path)
 
 watch(
   () => route.path,

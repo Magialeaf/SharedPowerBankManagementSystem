@@ -1,3 +1,5 @@
+from django.core.cache import caches
+from django.db import transaction, IntegrityError
 from rest_framework.exceptions import ValidationError
 
 from spb_management.base_class.GetAndPostAPIView import GetAndPostAPIView
@@ -49,6 +51,58 @@ class OneUserBase(GetAndPostAPIView):
 
         return response(ResponseCode.ERROR, "更新失败", {})
 
+    def create(self, request):
+        conditions, data = Internet.get_internet_data(request)
+        user_info = {
+            "username": data.get("username", ""),
+            "profile": data.get("profile", ""),
+            "sex": data.get("sex", ""),
+            "birthday": data.get("birthday", ""),
+            "avatar": data.get("avatar", ""),
+        }
+        account_info = {
+            "account": data.get("account", ""),
+            "password": data.get("password", ""),
+            "email": data.get("email", ""),
+            "identity": data.get("identity", ""),
+        }
+        account_serializer = AccountSerializer(data=account_info)
+        try:
+            account_serializer.is_valid(raise_exception=True)
+            account = account_serializer.save()
+            account_data = account_serializer.to_representation(account)
+        except ValidationError as e:
+            return validation_exception(e)
+
+        user_info['aid_id'] = account.id
+        user_serializer = UserSerializer(data=user_info)
+        try:
+            user_serializer.is_valid(raise_exception=True)
+            user = user_serializer.save()
+            user_data = user_serializer.to_representation(user)
+        except ValidationError as e:
+            return validation_exception(e)
+        except Exception as e:
+            print(e)
+            return response(ResponseCode.ERROR, "创建失败", {})
+
+        return response(ResponseCode.SUCCESS, "创建成功", [account_data, user_data])
+
+    @transaction.atomic
+    def delete(self, uid):
+        user_query = UserInfo.objects.filter(id=uid).first()
+        if not user_query:
+            return response(ResponseCode.ERROR, "删除失败", {})
+
+        account_query = AccountInfo.objects.filter(id=user_query.aid_id).first()
+        if not account_query:
+            return response(ResponseCode.ERROR, "删除失败", {})
+
+        account_query.delete()
+        user_query.delete()
+        return response(ResponseCode.SUCCESS, "删除成功", {})
+
+
     def validate_identity(self, request):
         user_identity = request.user.get("identity", "")
         if user_identity == Identity.SUPER_ADMIN.value:
@@ -80,7 +134,16 @@ class OneUserBase(GetAndPostAPIView):
 
         data['id'] = aid
         ser = AccountSerializer(account_instance, data=data, partial=True)
+
         try:
+            email = data.get("email", None)
+            if email and now_aid == aid:
+                captcha_key = f"captcha:{email}"
+                captcha_value = caches['user_captcha'].get(captcha_key)
+                captcha = int(data.get("captcha", -1))
+                if not (captcha_value and captcha_value == captcha):
+                    raise ValidationError({"captcha": "验证码错误"})
+
             ser.is_valid(raise_exception=True)
             account_data = ser.save()
             if account_data.get("identity", False) and now_aid == aid:

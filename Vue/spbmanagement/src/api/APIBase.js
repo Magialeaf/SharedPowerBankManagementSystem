@@ -20,8 +20,7 @@ class APIBaseService {
       // 根据action判断是GET还是POST请求
       response = await $get(this.url, {
         action: this.action,
-        conditions,
-        data
+        conditions
       })
     } else if (this.method === HttpMethod.POST) {
       response = await $post(this.url, {
@@ -121,6 +120,12 @@ export const updateAPI = (url, conditions = {}, data = {}, action = 'update') =>
 export const deleteAPI = (url, conditions = {}, action = 'delete') =>
   new (class extends APIBaseService {})(url, action, HttpMethod.POST).executeWithParams(conditions)
 
+// 上传图片
+export const uploadImageAPI = (url, fileData = {}) =>
+  new (class extends UploadBaseService {})(url, 'image', HttpMethod.POST).executeWithParams(
+    fileData
+  )
+
 // 获得账户（Pk是主数据）
 export const getByPkAPI = (url, pk, conditions = {}, data = ['all'], action = 'get') =>
   new (class extends APIBaseService {})(url + pk + '/', action, HttpMethod.Get).executeWithParams(
@@ -146,10 +151,4 @@ export const updateByPkAPI = (url, pk, conditions = {}, data = {}, action = 'upd
 export const deleteByPkAPI = (url, pk, conditions = {}, action = 'delete') =>
   new (class extends APIBaseService {})(url + pk + '/', action, HttpMethod.POST).executeWithParams(
     conditions
-  )
-
-// 上传图片
-export const uploadImageAPI = (url, fileData = {}) =>
-  new (class extends UploadBaseService {})(url, 'image', HttpMethod.POST).executeWithParams(
-    fileData
   )

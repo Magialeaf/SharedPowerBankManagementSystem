@@ -41,9 +41,9 @@ import { useChangeThemeColorStore } from '@/stores/themeColor.js'
 import { useManageHeaderStore } from '@/stores/manageStore.js'
 const changeThemeColor = useChangeThemeColorStore()
 const manageHeaderStore = useManageHeaderStore()
-const AdminHeader = ref('/management/manage-home')
 const menuItems = ref()
 const route = useRoute()
+const AdminHeader = ref(route.path)
 
 watch(
   () => route.path,

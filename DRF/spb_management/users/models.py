@@ -87,5 +87,20 @@ class UserInfo(models.Model):
         return UserInfo._meta.get_field(field_name).verbose_name
 
 
-class MaintainInfo(UserInfo):
-    maintain_areas = models.ManyToManyField(AreaInfo, verbose_name="维护区域", related_name="maintain_info")
+class MaintainInfo(models.Model):
+    id = models.AutoField(verbose_name="id", primary_key=True)
+    aid = models.ForeignKey(
+        AccountInfo,
+        verbose_name="aid",
+        on_delete=models.CASCADE,
+        related_name="maintain_info",
+    )
+    area_id = models.ForeignKey(
+        AreaInfo,
+        verbose_name="area_id",
+        on_delete=models.CASCADE,
+        related_name="maintain_info",
+        blank=True,
+        null=True,
+    )
+

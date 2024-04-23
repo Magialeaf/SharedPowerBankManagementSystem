@@ -35,7 +35,7 @@ import HomeFooter from '@/components/home/index/HomeFooter.vue'
 .content-box {
   position: relative;
   width: 100%;
-  margin-top: 100px;
+  margin-top: 80px;
 }
 
 .container {

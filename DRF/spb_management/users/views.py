@@ -1,20 +1,22 @@
 import datetime
 import re
 from django.core.cache import caches
+from django.db.models import Q, QuerySet
 from rest_framework.exceptions import ValidationError
 
 from django.utils import timezone
 from spb_management.base_class.GetAndPostAPIView import GetAndPostAPIView
 from spb_management.router.Internet import create_jwt_token, set_jwt_token
 from spb_management.router.image_operation import UploadImage, ImgAPI
-from spb_management.router.permission import MoreAndAdminPermission, NotAnonPermission
+from spb_management.router.permission import MoreAndAdminPermission, NotAnonPermission, MoreAndMaintainerPermission
 from spb_management.router.response_data import ResponseCode, response, response_data
 from spb_management.router import Internet
-from users.utils.throttle import EnterThrottle, UserThrottle, AccountThrottle, UserAvatarThrottle
+from users.utils.throttle import EnterThrottle, UserThrottle, AccountThrottle, UserAvatarThrottle, MaintainThrottle
 from spb_management.utils.captcha import destroy_captcha, set_captcha, generate_captcha, send_captcha_email
 from spb_management.utils.my_exception import validation_exception
-from users.models import UserInfo, AccountInfo, Identity
-from users.utils.serializer import LoginByAccountSerializer, RegisterSerializer, UserSerializer, AccountSerializer
+from users.models import UserInfo, AccountInfo, Identity, MaintainInfo
+from users.utils.serializer import LoginByAccountSerializer, RegisterSerializer, UserSerializer, AccountSerializer, \
+    MaintainSerializer
 from users.utils.base_views import OneUserBase, TOKEN_TIME
 
 
@@ -192,42 +194,73 @@ class UserView(GetAndPostAPIView):
     def get(self, request, version, **kwargs):
         action = request.GET.get("action", " ")
         if action == "getList":
-            conditions, data = Internet.get_internet_data(request)
             page = kwargs.get('pk', 1)
-            conditions['page'] = page
-            print(conditions)
-            return self.get_user_info(conditions, "all")
-        # todo：暂时没用
-        if action == "getOne":
-            id = kwargs.get('pk', '')
-            return self.get_user_info(id,"one")
-        return response(ResponseCode.ERROR, "请求参数错误", {})
+            return self.get_user_info(page, request)
 
-    def post (self, request, version, **kwargs):
+    def post(self, request, version, **kwargs):
         return super().post(request, version, **kwargs)
 
-    def get_user_info(self, param:dict | int = None, type="all"):
-        if type == "all":
-            page = int(param['page']) if param.get("page", 0) > 0 else 1
-            identity = param.get("identity", Identity.ANON.value)
-            items_per_page = 10
-            start_index = (page - 1) * items_per_page
+    def get_user_info(self, page, request):
+        conditions, data = Internet.get_internet_data(request)
+        page = page if page > 0 else 1
+        identity = int(conditions.get('identity', Identity.ANON.value))
+        items_per_page = 10
+        start_index = (page - 1) * items_per_page
 
-            aid_values = list(AccountInfo.objects.filter(identity=identity).values_list('id', flat=True)[start_index:start_index + items_per_page])
-            user_query = UserInfo.objects.filter(aid__in=aid_values)
-            res = []
-            for user in user_query:
-                serializer = UserSerializer(user)
-                structured_data = serializer.to_representation(user)
-                res.append(structured_data)
-            return response(ResponseCode.SUCCESS, "获取成功", res)
-        elif type == "one":
-            user_query = UserInfo.objects.filter(aid=param).first()
-            if user_query:
-                serializer = UserSerializer(user_query)
-                structured_data = serializer.to_representation(user_query)
-                return response(ResponseCode.SUCCESS, "获取成功", structured_data)
-        return response(ResponseCode.ERROR, "获取失败", {})
+        aid_values = set(AccountInfo.objects.filter(identity=identity).values_list('id', flat=True))
+        user_query = QuerySet()
+        if identity == Identity.USER.value:
+            keyword = conditions.get('keyword', None)
+            base_query = Q()
+            if keyword:
+                match_fields = ['username', 'profile']
+
+                for field in match_fields:
+                    base_query |= Q(**{f'{field}__icontains': keyword})
+
+            base_query &= Q(aid__in=aid_values)
+            user_query = UserInfo.objects.filter(base_query)[start_index:start_index + items_per_page]
+            total = UserInfo.objects.filter(base_query).count()
+
+        if identity == Identity.MAINTAINER.value:
+            keyword = conditions.get('keyword', None)
+            area_id = conditions.get('areaId', None)
+            base_query = Q()
+
+            if keyword:
+                match_fields = ['username', 'profile']
+                for field in match_fields:
+                    base_query |= Q(**{f'{field}__icontains': keyword})
+            if area_id:
+                maintainers_in_area = set(MaintainInfo.objects.filter(area_id_id=area_id,aid_id__identity=identity).values_list('aid', flat=True))
+                base_query &= Q(aid__in=maintainers_in_area)
+            else:
+                base_query &= Q(aid__in=aid_values)
+            user_query = UserInfo.objects.filter(base_query)[start_index:start_index + items_per_page]
+            total = UserInfo.objects.filter(base_query).count()
+
+        serializer = UserSerializer(user_query, many=True)
+        structured_data = serializer.to_representation(user_query)
+        extra = {
+            "total": total,
+            "pageSize": items_per_page,
+        }
+
+        def set_default_areas(item):
+            item['areas'] = ["000000|", "000000|", "000000|"]
+
+        if identity == Identity.MAINTAINER.value:
+            for item in structured_data:
+                aid_id = item.get('aid_id', None)
+                if aid_id:
+                    areas = MaintainInfo.objects.filter(aid_id=aid_id).values_list('area_id__code', 'area_id__name')
+                    if areas:
+                        item['areas'] = [f"{area[0] or '000000'}|{area[1] or ''}" for area in areas]
+                    else:
+                        set_default_areas(item)
+                else:
+                    set_default_areas(item)
+        return response(ResponseCode.SUCCESS, "获取成功", structured_data, extra=extra)
 
 
 """ —————————————————————————————— """
@@ -284,6 +317,9 @@ class MyInfoView(OneUserBase):
                 id_ = request.user.get("aid", "")
                 return self.update(id_, request)
             return response(ResponseCode.ERROR, "请求参数错误", {})
+        elif action == "delete":
+            id_ = request.user.get("uid", "")
+            return self.delete(id_)
         return response(ResponseCode.ERROR, "请求参数错误", {})
 
 
@@ -302,9 +338,14 @@ class OneInfoView(OneUserBase):
 
     def post(self, request, version, **kwargs):
         action = request.POST.get("action", " ")
-        if action == "update":
+        if action == "create":
+            return self.create(request)
+        elif action == "update":
             id_ = kwargs.get('pk', '')
             return self.update(id_, request)
+        elif action == "delete":
+            id_ = kwargs.get('pk', '')
+            return self.delete(id_)
         return response(ResponseCode.ERROR, "请求参数错误", {})
 
 
@@ -326,6 +367,83 @@ class UserAvatarView(GetAndPostAPIView):
         elif res[0] == UploadImage.IMG_EXIST:
             return response(ResponseCode.SUCCESS, "头像已存在", {"avatar": res[1]})
 
+
+""" —————————————————————————————— """
+""" |        MaintainInfo        | """
+""" —————————————————————————————— """
+
+
+class MaintainView(GetAndPostAPIView):
+    permission_classes = [MoreAndMaintainerPermission, ]
+    throttle_classes = [MaintainThrottle, ]
+
+    def get(self, request, version, **kwargs):
+        action = request.GET.get("action", " ")
+        if action == "get":
+            id_ = kwargs.get('pk', '')
+            return self.get_maintain_info(id_)
+        return response(ResponseCode.ERROR, "请求参数错误", {})
+
+    def post(self, request, version, **kwargs):
+        action = request.POST.get("action", " ")
+        if action == "update":
+            id_ = kwargs.get('pk', '')
+            return self.update_maintain_info(id_, request)
+        return response(ResponseCode.ERROR, "请求参数错误", {})
+
+    def get_maintain_info(self, aid):
+        maintain_query = MaintainInfo.objects.filter(aid=aid).order_by("id")
+        if maintain_query:
+            serializer = MaintainSerializer(maintain_query, many=True)
+            structured_data = serializer.to_representation(maintain_query)
+            return response(ResponseCode.SUCCESS, "获取成功", structured_data)
+        else:
+            res = [
+                {'id': 0, 'aid_id': aid, 'area_id': None, 'code': '000000'},
+                {'id': 0, 'aid_id': aid, 'area_id': None, 'code': '000000'},
+                {'id': 0, 'aid_id': aid, 'area_id': None, 'code': '000000'}
+            ]
+            return response(ResponseCode.SUCCESS, "获取成功", res)
+
+    def update_maintain_info(self, aid, request):
+        conditions, data = Internet.get_internet_data(request)
+        maintain_query = MaintainInfo.objects.filter(aid=aid).order_by("id")
+        if maintain_query:
+            res = []
+            idx = '0'
+            for query in maintain_query:
+                value = None if int(data[idx]) == 0 else int(data[idx])
+                area_data = {"aid": aid, "area_id": value}
+                serializer = MaintainSerializer(query, data=area_data)
+                try:
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+                    res.append(serializer.data)
+                    idx = str(int(idx) + 1)
+                except ValidationError as e:
+                    validation_exception(e)
+
+            return response(ResponseCode.SUCCESS, "更新成功", res)
+        else:
+            for key, value in data.items():
+                value = int(value)
+                value = None if value == 0 else value
+                area_data = {"aid": aid, "area_id": value}
+                serializer = MaintainSerializer(data=area_data)
+                try:
+                    serializer.is_valid(raise_exception=True)
+                    new_maintain_info = serializer.save()
+
+                except ValidationError as e:
+                    return validation_exception(e)
+
+            query = MaintainInfo.objects.filter(aid=aid).order_by("id")
+            serializer = MaintainSerializer(data=query, many=True)
+            data = serializer.to_representation(query)
+
+        return response(ResponseCode.SUCCESS, "创建成功", data)
+
+        # return response(ResponseCode.ERROR, "更新失败", {})
 
 
 

@@ -1,8 +1,4 @@
 <template>
-  <div class="operation">
-    <el-button type="info">新增</el-button>
-    <el-button type="info">删除</el-button>
-  </div>
   <el-table :data="userList" stripe border>
     <el-table-column class="table-column" min-width="5%" prop="id" label="uid" />
     <el-table-column class="table-column" min-width="15%" prop="username" label="用户名" />
@@ -14,7 +10,7 @@
     </el-table-column>
     <el-table-column class="table-column" min-width="15%" prop="profile" label="简介" />
     <el-table-column class="table-column" min-width="10%" prop="birthday" label="生日" />
-    <template v-if="haveMaintainArea">
+    <template v-if="props.identityCode == identityStore.Maintainer">
       <el-table-column
         class="table-column"
         min-width="20%"
@@ -25,50 +21,52 @@
     <el-table-column min-width="30%" label="操作">
       <template v-slot="scope">
         <el-button type="info" @click="showDetails(scope.row)">详细</el-button>
-        <el-button type="warning">删除</el-button>
+        <el-button type="warning" @click="deleteRow(scope.row)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
 
   <el-drawer v-model="drawer" size="50%" :with-header="false">
-    <OneUserInfo v-if="drawer" :uid="selectedUid"
+    <OneUserInfo v-if="drawer" :uid="selectedUid" :identityCode="props.identityCode"
   /></el-drawer>
 </template>
 
 <script setup>
-import OneUserInfo from '@/components/management/user/OneUserInfo.vue'
+import { $confirmDeleteMsg, $errorMsg } from '@/utils/msg'
+import { useIdentityStore } from '@/stores/authenticationStore'
+import { useUserStore } from '@/stores/userStore'
 import { ref, computed } from 'vue'
+import OneUserInfo from '@/components/management/user/OneUserInfo.vue'
 
-const haveMaintainArea = ref(false)
-
-const userList = ref(
-  computed(() => {
-    identify()
-    return prop.userData
-  })
-)
-
-function identify() {
-  for (let i = 0; i < prop.userData?.length; i++) {
-    if (prop.userData[i].maintain_areas) {
-      haveMaintainArea.value = true
-      break
-    }
-  }
-}
+const userList = computed(() => props.userData)
 
 const drawer = ref(false)
 const selectedUid = ref(undefined)
+const userStore = useUserStore()
+const identityStore = useIdentityStore()
 
-const prop = defineProps({
+const props = defineProps({
   userData: {
     type: Array
+  },
+  identityCode: {
+    type: Number
   }
 })
 
 function showDetails(row) {
   selectedUid.value = row.id // 获取当前点击行的 uid
   drawer.value = true // 打开抽屉
+}
+
+function deleteRow(row) {
+  $confirmDeleteMsg('确定删除用户吗?')
+    .then(() => {
+      userStore.deleteOneInfo(row.id)
+    })
+    .catch((e) => {
+      $errorMsg('取消删除')
+    })
 }
 </script>
 

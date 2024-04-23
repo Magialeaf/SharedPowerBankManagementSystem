@@ -1,14 +1,23 @@
-# from django.db import models
-#
-# # Create your models here.
-#
-# ### admin (system_administration) 应用
-# # 根据实际情况定义所需的系统管理相关模型，这里假设有一个简单的日志模型
-#
-# class SystemLog(models.Model):
-#     action_time = models.DateTimeField(auto_now_add=True)
-#     user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE)
-#     action_type = models.CharField(max_length=50)
-#     message = models.TextField()
-#
-# # 注意：以上代码仅为示例，实际建模时需根据业务需求调整字段类型、长度、约束条件等细节
+from django.db import models
+from spb_management.router.image_operation import ImgAPI
+
+
+class NoticeInfo(models.Model):
+    id = models.AutoField(verbose_name="id", primary_key=True)
+    title = models.CharField(verbose_name="标题", max_length=20)
+    content = models.TextField(verbose_name="内容")
+    type = models.SmallIntegerField(verbose_name="类型", choices=((0, "管理员公告"), (1, "维护人员公告"), (2, "全体公告")))
+    create_time = models.DateTimeField(verbose_name="创建时间", auto_now_add=True)
+    update_time = models.DateTimeField(verbose_name="更新时间", auto_now=True)
+
+
+class CarouselChartInfo(models.Model):
+    id = models.AutoField(verbose_name="id", primary_key=True)
+    img = models.ImageField(verbose_name='轮播图', upload_to=ImgAPI.carousel_chart_path)
+    title = models.CharField(max_length=20, verbose_name='标题')
+    active = models.BooleanField(default=True, verbose_name='是否启用')
+    create_time = models.DateTimeField(verbose_name="创建时间", auto_now_add=True)
+    update_time = models.DateTimeField(verbose_name="更新时间", auto_now=True)
+
+
+

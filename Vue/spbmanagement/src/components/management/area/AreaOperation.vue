@@ -67,9 +67,11 @@ const updateAreaInfo = lockFunction()(() => {
 onBeforeMount(() => {
   areaStore.getArea(prop.id).then((res) => {
     areaInfo.value = res.data
-    codeList.value[0] = areaInfo.value.code.slice(0, 2)
-    codeList.value[1] = areaInfo.value.code.slice(0, 4)
-    codeList.value[2] = areaInfo.value.code.slice(0, 6)
+    codeList.value = [
+      areaInfo.value.code.slice(0, 2),
+      areaInfo.value.code.slice(0, 4),
+      areaInfo.value.code.slice(0, 6)
+    ]
   })
 })
 

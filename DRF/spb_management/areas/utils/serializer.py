@@ -84,3 +84,8 @@ class AreaSerializer(serializers.ModelSerializer):
         return instance
 
 
+class AreaNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AreaInfo
+        fields = ('id', 'name')
+
