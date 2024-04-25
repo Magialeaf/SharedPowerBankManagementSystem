@@ -1,6 +1,7 @@
 import datetime
 import re
 from django.core.cache import caches
+from django.db import transaction
 from django.db.models import Q, QuerySet
 from rest_framework.exceptions import ValidationError
 
@@ -195,12 +196,12 @@ class UserView(GetAndPostAPIView):
         action = request.GET.get("action", " ")
         if action == "getList":
             page = kwargs.get('pk', 1)
-            return self.get_user_info(page, request)
+            return self.get_user_list(page, request)
 
     def post(self, request, version, **kwargs):
         return super().post(request, version, **kwargs)
 
-    def get_user_info(self, page, request):
+    def get_user_list(self, page, request):
         conditions, data = Internet.get_internet_data(request)
         page = page if page > 0 else 1
         identity = int(conditions.get('identity', Identity.ANON.value))
@@ -408,43 +409,42 @@ class MaintainView(GetAndPostAPIView):
     def update_maintain_info(self, aid, request):
         conditions, data = Internet.get_internet_data(request)
         maintain_query = MaintainInfo.objects.filter(aid=aid).order_by("id")
-        if maintain_query:
-            res = []
-            idx = '0'
-            for query in maintain_query:
-                value = None if int(data[idx]) == 0 else int(data[idx])
-                area_data = {"aid": aid, "area_id": value}
-                serializer = MaintainSerializer(query, data=area_data)
-                try:
-                    serializer.is_valid(raise_exception=True)
-                    serializer.save()
-                    res.append(serializer.data)
-                    idx = str(int(idx) + 1)
-                except ValidationError as e:
-                    validation_exception(e)
 
-            return response(ResponseCode.SUCCESS, "更新成功", res)
-        else:
-            for key, value in data.items():
-                value = int(value)
-                value = None if value == 0 else value
-                area_data = {"aid": aid, "area_id": value}
-                serializer = MaintainSerializer(data=area_data)
+        with transaction.atomic():
+            if maintain_query:
+                res = []
                 try:
-                    serializer.is_valid(raise_exception=True)
-                    new_maintain_info = serializer.save()
+                    idx = '0'
+                    for query in maintain_query:
+                        value = None if int(data[idx]) == 0 else int(data[idx])
+                        area_data = {"aid": aid, "area_id": value}
+                        serializer = MaintainSerializer(query, data=area_data)
 
+                        serializer.is_valid(raise_exception=True)
+                        serializer.save()
+                        res.append(serializer.data)
+                        idx = str(int(idx) + 1)
+                    return response(ResponseCode.SUCCESS, "更新成功", res)
                 except ValidationError as e:
                     return validation_exception(e)
+            else:
+                try:
+                    for key, value in data.items():
+                        value = int(value)
+                        value = None if value == 0 else value
+                        area_data = {"aid": aid, "area_id": value}
+                        serializer = MaintainSerializer(data=area_data)
 
-            query = MaintainInfo.objects.filter(aid=aid).order_by("id")
-            serializer = MaintainSerializer(data=query, many=True)
-            data = serializer.to_representation(query)
+                        serializer.is_valid(raise_exception=True)
+                        new_maintain_info = serializer.save()
 
-        return response(ResponseCode.SUCCESS, "创建成功", data)
+                        query = MaintainInfo.objects.filter(aid=aid).order_by("id")
+                        serializer = MaintainSerializer(data=query, many=True)
+                        data = serializer.to_representation(query)
 
-        # return response(ResponseCode.ERROR, "更新失败", {})
-
+                        return response(ResponseCode.SUCCESS, "创建成功", data)
+                except ValidationError as e:
+                    return validation_exception(e)
 
 
 

@@ -83,7 +83,10 @@ function areaSelected(value) {
     .then((res) => {
       areaOptions.value = res.data
     })
-    .catch((e) => {})
+    .catch((e) => {
+      merchantInfo.value.area = null
+      areaOptions.value = []
+    })
 }
 
 const merchantInfo = ref({
@@ -127,7 +130,7 @@ const updateMerchant = lockFunction()(() => {
 
 function afterUploadImgSuccess(value) {
   let inputData = { ...merchantInfo.value }
-  inputData.shop_img = value.data.shop_img
+  inputData.shop_img = value.data.img
   if (props.ifNew) {
     merchantStore
       .createMerchant(inputData, false)
@@ -136,7 +139,14 @@ function afterUploadImgSuccess(value) {
   } else {
     merchantStore
       .updateMerchant(inputData.id, inputData, true)
-      .then((res) => {})
+      .then((res) => {
+        merchantInfo.value = res.data[0]
+        codeList.value = [
+          res.data[0].area_data.slice(0, 2),
+          res.data[0].area_data.slice(0, 4),
+          res.data[0].area_data.slice(0, 6)
+        ]
+      })
       .catch((e) => {})
   }
 }

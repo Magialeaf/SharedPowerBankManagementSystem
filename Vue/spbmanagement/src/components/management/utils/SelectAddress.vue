@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import { ref, watch, defineProps, defineEmits, onBeforeMount } from 'vue'
+import { ref, watch, computed, defineProps, defineEmits, onBeforeMount } from 'vue'
 import { useAreaStore } from '@/stores/areaStore'
 
 const areaStore = useAreaStore()
@@ -22,7 +22,7 @@ const props = defineProps({
   }
 })
 
-const codeList = ref(props.codeList)
+const codeList = computed(() => props.codeList)
 const selectArea = ref(props.areaOption)
 
 const emits = defineEmits(['select-area', 'clear-code-list'])
@@ -33,7 +33,10 @@ function handleSelect(lst) {
     .then((res) => {
       areaOptions.value = res.data
     })
-    .catch((e) => {})
+    .catch((e) => {
+      areaOptions.value = []
+      selectArea.value = null
+    })
 }
 
 watch(selectArea, (val) => {
@@ -42,7 +45,6 @@ watch(selectArea, (val) => {
 
 function clearCode() {
   emits('clear-code-list')
-  codeList.value = ['00', '0000', '000000']
   selectArea.value = ''
 }
 

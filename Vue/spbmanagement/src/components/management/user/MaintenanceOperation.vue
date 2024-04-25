@@ -59,6 +59,7 @@ const onSubmit = lockFunction()(() => {
   maintainStore
     .updateMaintain(props.aid, maintenanceId.value, uploadAreaOptions)
     .then((res) => {
+      handleData(res)
       userStore
         .getUserList()
         .then((res) => {})
@@ -71,18 +72,22 @@ onBeforeMount(() => {
   maintainStore
     .getMaintain(props.aid)
     .then((res) => {
-      for (let i = 0; i < res.data.length; i++) {
-        maintenanceId.value[i] = res.data[i].id
-        areaOptions.value[i] = res.data[i].area_id
-        codeLists.value[i] = [
-          res.data[i].code.slice(0, 2),
-          res.data[i].code.slice(0, 4),
-          res.data[i].code.slice(0, 6)
-        ]
-      }
+      handleData(res)
     })
     .catch((e) => {})
 })
+
+function handleData(res) {
+  for (let i = 0; i < res.data.length; i++) {
+    maintenanceId.value[i] = res.data[i].id
+    areaOptions.value[i] = res.data[i].area_id
+    codeLists.value[i] = [
+      res.data[i].code.slice(0, 2),
+      res.data[i].code.slice(0, 4),
+      res.data[i].code.slice(0, 6)
+    ]
+  }
+}
 </script>
 
 <style scoped></style>

@@ -22,6 +22,8 @@ from users import views as users_api
 from areas import views as areas_api
 from merchants import views as merchants_api
 from system_administration import views as system_administration_api
+from orders import views as orders_api
+from power_bank import views as power_bank_api
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
@@ -44,12 +46,20 @@ urlpatterns = [
     path('<str:version>/merchant/img/', merchants_api.MerchantImgThrottle.as_view(), name='merchant_img_detail'),
 
     # power_bank app
+    path('<str:version>/power-bank/<int:pk>/', power_bank_api.PowerBankView.as_view(), name='power_bank_detail'),
+    path('<str:version>/power-bank/img/', power_bank_api.PowerBankImgView.as_view(), name='power_bank_img_detail'),
+    path('<str:version>/power-bank/maintenance/<int:pk>/', power_bank_api.PowerBankMaintenanceView.as_view(), name='power_bank_maintenance_detail'),
 
     # orders app
+    path('<str:version>/power-bank-fee/<int:pk>/', orders_api.PowerBankFeeView.as_view(), name='power_bank_fee_detail'),
+    path('<str:version>/power-bank-rental/<int:pk>/', orders_api.PowerBankRentalView.as_view(), name='power_bank_rental_detail'),
+    path('<str:version>/power-bank-return/<int:pk>/', orders_api.PowerBankReturnView.as_view(), name="power_bank_return_detail"),
+
 
     # system_administration app
     path('<str:version>/system-administration/carousel-chart/<int:pk>/', system_administration_api.CarouselChartView.as_view(), name='carousel_chart_detail'),
-    path('<str:version>/system-administration/carousel-chart/img/', system_administration_api.CarouselChartImgView.as_view(), name='carousel_chart_img_detail')
+    path('<str:version>/system-administration/carousel-chart/img/', system_administration_api.CarouselChartImgView.as_view(), name='carousel_chart_img_detail'),
+    path('<str:version>/system-administration/notice/<int:pk>', system_administration_api.NoticeView.as_view(), name="notice_detail"),
 ]
 
 # 主路由中：显性告诉django绑定media_url和media_root

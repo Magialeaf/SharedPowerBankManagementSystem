@@ -14,12 +14,19 @@ export const merchantURL = v1 + '/merchant/'
 export const merchantImgURL = v1 + '/merchant/img/'
 
 // DRF: orders
+export const powerBankFeeURL = v1 + '/power-bank-fee/'
+export const powerBankRentalURL = v1 + '/power-bank-rental/'
+export const powerBankReturnURL = v1 + '/power-bank-return/'
 
 // DRF: power_bank
+export const powerBankURL = v1 + '/power-bank/'
+export const powerBankImgURL = v1 + '/power-bank/img/'
+export const powerBankMaintenance = v1 + '/power-bank/maintenance/'
 
 // DRF: system_administration
 export const carouselChartURL = v1 + '/system-administration/carousel-chart/'
 export const carouselChartImgURL = v1 + '/system-administration/carousel-chart/img/'
+export const noticeURL = v1 + '/system-administration/notice/'
 
 // DRF：users
 export const enterURL = v1 + '/enter/'

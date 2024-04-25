@@ -6,6 +6,7 @@ import re
 
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from rest_framework.validators import UniqueTogetherValidator
 
 from areas.utils.area import get_area_code
 from spb_management.router.image_operation import ImgAPI
@@ -245,6 +246,14 @@ class MaintainSerializer(serializers.ModelSerializer):
     class Meta:
         model = MaintainInfo
         fields = '__all__'  # 或者列出您想要序列化的字段
+
+        validators = [
+            UniqueTogetherValidator(
+                queryset=MaintainInfo.objects.all(),
+                fields=['aid', 'area_id'],
+                message='管理区域发生重复！'
+            )
+        ]
 
     def create(self, validated_data):
         value = validated_data.get('aid', 0)

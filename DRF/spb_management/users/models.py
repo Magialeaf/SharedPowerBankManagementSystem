@@ -1,6 +1,7 @@
 import datetime
 from enum import Enum
 from django.db import models
+from django.db.models import UniqueConstraint, Q
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
 
@@ -103,4 +104,13 @@ class MaintainInfo(models.Model):
         blank=True,
         null=True,
     )
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=['aid', 'area_id'],
+                name='unique_aid_area_id',
+                condition=~Q(area_id=None),  # 可选：如果允许 aid 与 NULL 的 area_id 绑定多次，则移除此条件
+            ),
+        ]
 

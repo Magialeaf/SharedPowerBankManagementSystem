@@ -6,6 +6,7 @@ from merchants.models import MerchantInfo
 from merchants.utils.serializer import MerchantSerializer
 from merchants.utils.throttle import MerchantThrottle
 from spb_management.base_class.GetAndPostAPIView import GetAndPostAPIView
+from spb_management.base_class.UploadImgAPI import UploadImgAPI
 from spb_management.router import Internet
 from spb_management.router.image_operation import UploadImage, ImgAPI
 from spb_management.router.permission import MoreAndMaintainerPermission, NotAnonPermission
@@ -126,15 +127,8 @@ class MerchantView(GetAndPostAPIView):
             return response(ResponseCode.ERROR, "商户不存在", {})
 
 
-class MerchantImgThrottle(GetAndPostAPIView):
-    permission_classes = [NotAnonPermission, ]
+class MerchantImgThrottle(UploadImgAPI):
     throttle_classes = [MerchantThrottle, ]
 
-    def post(self, request, version, **kwargs):
-        res = UploadImage.upload_image(request, ImgAPI.merchant_img_path)
-        if res[0] == UploadImage.IMG_ERROR:
-            return response(ResponseCode.ERROR, res[1], {})
-        elif res[0] == UploadImage.IMG_NEW:
-            return response(ResponseCode.SUCCESS, "上传成功", {"shop_img": res[1]})
-        elif res[0] == UploadImage.IMG_EXIST:
-            return response(ResponseCode.SUCCESS, "图片已存在", {"shop_img": res[1]})
+    def __init__(self):
+        super().__init__(ImgAPI.merchant_img_path)

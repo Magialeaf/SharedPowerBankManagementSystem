@@ -48,12 +48,19 @@ def get_internet_data(request):
     conditions = {}
     data = {}
 
+    def get_conditions(key, value):
+        if key.find("]") != len(key) - 1:
+            clean_key = key[11:key.find("]")]
+            conditions[clean_key].append(value) if clean_key in conditions else conditions.update({clean_key: [value]})
+        else:
+            clean_key = key[11:-1]
+            conditions[clean_key] = value
+
     if request.method == 'GET':
         data = request.GET.getlist('data[]', ' ')
         for key, value in request.GET.items():
             if key.startswith('conditions[') and key.endswith(']'):
-                clean_key = key[11:-1]
-                conditions[clean_key] = value
+                get_conditions(key, value)
 
     elif request.method == 'POST':
         for key, value in request.data.items():
@@ -61,7 +68,33 @@ def get_internet_data(request):
                 clean_key = key[5:-1]
                 data[clean_key] = value
             elif key.startswith('conditions[') and key.endswith(']'):
-                clean_key = key[11:-1]
-                conditions[clean_key] = value
+                get_conditions(key, value)
 
     return conditions, data
+
+
+
+
+# def get_internet_data(request):
+#     conditions = {}
+#     data = {}
+#
+#     if request.method == 'GET':
+#         data = request.GET.getlist('data[]', ' ')
+#         for key, value in request.GET.items():
+#             if key.startswith('conditions[') and key.endswith(']'):
+#                 clean_key = key[11:-1]
+#                 conditions[clean_key] = value
+#     elif request.method == 'POST':
+#         for key, value in request.data.items():
+#             if key.startswith('data[') and key.endswith(']'):
+#                 clean_key = key[5:-1]
+#                 data[clean_key] = value
+#             elif key.startswith('conditions[') and key.endswith(']'):
+#                 clean_key = key[11:-1]
+#                 conditions[clean_key] = value
+#
+#     print(conditions)
+#     print(data)
+#
+#     return conditions, data

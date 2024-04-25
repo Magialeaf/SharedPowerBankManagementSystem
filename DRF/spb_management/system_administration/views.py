@@ -2,7 +2,9 @@ from django.db.models import Q
 from django.shortcuts import render
 from rest_framework.exceptions import ValidationError
 
+from spb_management.base_class.CRUDInterface import CRUDInterface, UnknownActionError
 from spb_management.base_class.GetAndPostAPIView import GetAndPostAPIView
+from spb_management.base_class.UploadImgAPI import UploadImgAPI
 from spb_management.router import Internet
 from spb_management.router.image_operation import ImgAPI, UploadImage
 from spb_management.router.permission import MoreAndAdminPermission
@@ -144,15 +146,31 @@ class CarouselChartView(GetAndPostAPIView):
 """ —————————————————————————————— """
 
 
-class CarouselChartImgView(GetAndPostAPIView):
-    permission_classes = [MoreAndAdminPermission, ]
+class CarouselChartImgView(UploadImgAPI):
     throttle_classes = [CarouselChartImgThrottle, ]
 
-    def post(self, request, version, **kwargs):
-        res = UploadImage.upload_image(request, ImgAPI.carousel_chart_path)
-        if res[0] == UploadImage.IMG_ERROR:
-            return response(ResponseCode.ERROR, res[1], {})
-        elif res[0] == UploadImage.IMG_NEW:
-            return response(ResponseCode.SUCCESS, "上传成功", {"img": res[1]})
-        elif res[0] == UploadImage.IMG_EXIST:
-            return response(ResponseCode.SUCCESS, "图片已存在", {"img": res[1]})
+    def __init__(self):
+        super().__init__(ImgAPI.carousel_chart_path)
+
+
+""" —————————————————————————————— """
+""" |          公告               | """
+""" —————————————————————————————— """
+
+
+class NoticeView(CRUDInterface):
+    def get_info(self, request, version, kwargs):
+        raise UnknownActionError("未实现的get_info")
+
+    def get_list(self, request, version, kwargs):
+        raise UnknownActionError("未实现的get_list")
+
+    def create_info(self, request, version, kwargs):
+        raise UnknownActionError("未实现的create_info")
+
+    def update_info(self, request, version, kwargs):
+        raise UnknownActionError("未实现的update_info")
+
+    def delete_info(self, request, version, kwargs):
+        raise UnknownActionError("未实现的delete_info")
+
