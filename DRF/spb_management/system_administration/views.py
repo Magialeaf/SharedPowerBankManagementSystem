@@ -10,15 +10,16 @@ from spb_management.router.image_operation import ImgAPI, UploadImage
 from spb_management.router.permission import MoreAndAdminPermission
 from spb_management.router.response_data import response, ResponseCode
 from spb_management.utils.my_exception import validation_exception
-from system_administration.models import CarouselChartInfo
-from system_administration.utils.serializer import CarouselChartSerializer, CarouselChartImgSerializer
+from spb_management.utils.page_operation import set_extra_page
+from system_administration.models import CarouselChartInfo, NoticeInfo
+from system_administration.utils.serializer import CarouselChartSerializer, CarouselChartImgSerializer, NoticeSerializer
 from system_administration.utils.throttle import CarouselChartGetThrottle, CarouselChartPostThrottle, \
-    CarouselChartImgThrottle
+    CarouselChartImgThrottle, NoticeThrottle
 
 # Create your views here.
 """
 系统设置管理，如全局配置项、公告发布等。
-日志管理和审计追踪，记录关键操作和异常事件。
+通知管理和审计追踪，记录关键操作和异常事件。
 数据备份与恢复、系统性能监控等功能。
 """
 
@@ -159,18 +160,72 @@ class CarouselChartImgView(UploadImgAPI):
 
 
 class NoticeView(CRUDInterface):
+    permission_classes = [MoreAndAdminPermission, ]
+    throttle_classes = [NoticeThrottle, ]
+
     def get_info(self, request, version, kwargs):
-        raise UnknownActionError("未实现的get_info")
+        id_ = kwargs.get("pk", None)
+        query = NoticeInfo.objects.filter(id=id_).first()
+        if query is None:
+            return response(ResponseCode.ERROR, "通知信息不存在", {})
+        else:
+            data = NoticeSerializer(query).data
+            return response(ResponseCode.SUCCESS, "获取成功", data)
 
     def get_list(self, request, version, kwargs):
-        raise UnknownActionError("未实现的get_list")
+        page = kwargs.get("pk", None)
+        if page is None or page < 1:
+            page = 1
+
+        conditions, data = Internet.get_internet_data(request)
+
+        items_per_page = 10
+        start_index = (page - 1) * items_per_page
+
+
+        query = NoticeInfo.objects.all()[start_index:start_index + items_per_page]
+        total = NoticeInfo.objects.count()
+
+        data = NoticeSerializer(query, many=True).data
+        extra = set_extra_page(total, items_per_page)
+
+        return response(ResponseCode.SUCCESS, "获取成功", data, extra=extra)
 
     def create_info(self, request, version, kwargs):
-        raise UnknownActionError("未实现的create_info")
+        conditions, data = Internet.get_internet_data(request)
+        serializer = NoticeSerializer(data=data)
+        try:
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            data = serializer.to_representation(serializer.instance)
+            return response(ResponseCode.SUCCESS, "创建成功", data)
+        except ValidationError as e:
+            return validation_exception(e)
 
     def update_info(self, request, version, kwargs):
-        raise UnknownActionError("未实现的update_info")
+        id_ = kwargs.get("pk", None)
+        conditions, data = Internet.get_internet_data(request)
+        try:
+            instance = NoticeInfo.objects.filter(id=id_).first()
+        except NoticeInfo.DoesNotExist:
+            return response(ResponseCode.ERROR, "通知不存在", {})
+
+        ser = NoticeSerializer(instance, data=data, partial=True)
+        try:
+            ser.is_valid(raise_exception=True)
+            res = ser.save()
+            data = ser.to_representation(res)
+            return response(ResponseCode.SUCCESS, "更新通知成功", data)
+        except ValidationError as e:
+            return validation_exception(e)
 
     def delete_info(self, request, version, kwargs):
-        raise UnknownActionError("未实现的delete_info")
+        id_ = kwargs.get("pk", None)
+        try:
+            NoticeInfo.objects.filter(id=id_).delete()
+            return response(ResponseCode.SUCCESS, "删除成功", {})
+        except NoticeInfo.DoesNotExist:
+            return response(ResponseCode.ERROR, "通知不存在", {})
+
+
 

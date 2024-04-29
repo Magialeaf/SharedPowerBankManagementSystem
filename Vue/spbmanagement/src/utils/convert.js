@@ -7,6 +7,8 @@ export function convertSexNameToCode(sexName) {
 
 // 将后端返回的时间戳转换为本地时间
 export function convertBackendTimestampToLocalTime(isoTimestampWithTimeZone) {
+  if (!isoTimestampWithTimeZone) return null
+
   const date = new Date(isoTimestampWithTimeZone)
   const formatter = new Intl.DateTimeFormat(undefined, {
     year: 'numeric',

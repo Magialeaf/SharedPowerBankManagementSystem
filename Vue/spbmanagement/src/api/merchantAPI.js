@@ -14,6 +14,9 @@ export const getMerchantAPI = (id) => getByPkAPI(merchantURL, id)
 export const getMerchantListAPI = (page, conditions) =>
   getByPkAPI(merchantURL, page, conditions, [], 'getList')
 
+// 通过area id 获得id和name
+export const getMerchantIdNameAPI = (id) => getByPkAPI(merchantURL, id, {}, [], 'getIdList')
+
 // 新增商户
 export const createMerchantAPI = (data = {}) => createByPkAPI(merchantURL, 0, data)
 

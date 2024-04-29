@@ -39,8 +39,9 @@ class BaseThrottle(SimpleRateThrottle):
         return (num_requests, duration)
 
     def throttle_failure(self):
+        current_scope = self.scope
         minutes_to_wait = int(self.wait() / 60) + 1
-        raise Throttled(detail=response_data(ResponseCode.ERROR, f"请求过于频繁，请{minutes_to_wait}分钟后再试", {}))
+        raise Throttled(detail=response_data(ResponseCode.ERROR, f"Scope '{current_scope}' 请求过于频繁，请求过于频繁，请{minutes_to_wait}分钟后再试", {}))
 
 
 class AnonThrottle(BaseThrottle):

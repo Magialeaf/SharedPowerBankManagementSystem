@@ -59,7 +59,7 @@ urlpatterns = [
     # system_administration app
     path('<str:version>/system-administration/carousel-chart/<int:pk>/', system_administration_api.CarouselChartView.as_view(), name='carousel_chart_detail'),
     path('<str:version>/system-administration/carousel-chart/img/', system_administration_api.CarouselChartImgView.as_view(), name='carousel_chart_img_detail'),
-    path('<str:version>/system-administration/notice/<int:pk>', system_administration_api.NoticeView.as_view(), name="notice_detail"),
+    path('<str:version>/system-administration/notice/<int:pk>/', system_administration_api.NoticeView.as_view(), name="notice_detail"),
 ]
 
 # 主路由中：显性告诉django绑定media_url和media_root

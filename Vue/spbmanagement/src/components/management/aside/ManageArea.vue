@@ -64,10 +64,7 @@ function switchAddNewArea() {
 function handlePageChange(page) {
   if (searchKey.value) {
     areaStore
-      .getAreaList(page, {
-        keyword: searchKey.value.keyword,
-        keycode: searchKey.value.keycode
-      })
+      .getAreaList(page, searchKey.value)
       .then((res) => {})
       .catch((e) => {})
   } else {
@@ -81,16 +78,16 @@ function handlePageChange(page) {
 function handleSearch(keyword) {
   searchKey.value.keyword = keyword
   areaStore
-    .getAreaList(1, { keyword: searchKey.value.keyword, keycode: searchKey.value.keycode })
+    .getAreaList(1, searchKey.value)
     .then((res) => {})
     .catch((e) => {})
 }
 
 function handleSelect(lst) {
-  searchKey.value.keyword = lst[0]
+  codeList.value = lst[0]
   searchKey.value.keycode = lst[0][2]
   areaStore
-    .getAreaList(1, { keyword: searchKey.value.keyword, keycode: searchKey.value.keycode })
+    .getAreaList(1, searchKey.value)
     .then((res) => {})
     .catch((e) => {})
 }
@@ -99,7 +96,7 @@ const clearCode = lockFunction(1000)(() => {
   codeList.value = ['00', '0000', '000000']
   searchKey.value.keycode = ''
   areaStore
-    .getAreaList(1, { keyword: searchKey.value.keyword, keycode: searchKey.value.keycode })
+    .getAreaList(1, searchKey.value)
     .then((res) => {})
     .catch((e) => {})
 })

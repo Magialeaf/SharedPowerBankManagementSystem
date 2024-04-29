@@ -197,6 +197,12 @@ class UserView(GetAndPostAPIView):
         if action == "getList":
             page = kwargs.get('pk', 1)
             return self.get_user_list(page, request)
+        elif action == "getNameList":
+            return self.get_name_list()
+        elif action == "getMaintainNameList":
+            return self.get_maintain_name_list()
+
+        return response(ResponseCode.ERROR, "请求参数错误", {})
 
     def post(self, request, version, **kwargs):
         return super().post(request, version, **kwargs)
@@ -262,6 +268,17 @@ class UserView(GetAndPostAPIView):
                 else:
                     set_default_areas(item)
         return response(ResponseCode.SUCCESS, "获取成功", structured_data, extra=extra)
+
+    def get_name_list(self):
+        query = UserInfo.objects.filter(aid__identity=Identity.USER.value).values("id", "username")
+        data = [{"id": item["id"], "name": item["username"]} for item in query]
+        return response(ResponseCode.SUCCESS, "获取成功", data)
+
+    def get_maintain_name_list(self):
+        query = UserInfo.objects.filter(aid__identity=Identity.MAINTAINER.value).values("id", "username")
+        data = [{"id": item["id"], "name": item["username"]} for item in query]
+
+        return response(ResponseCode.SUCCESS, "获取成功", data)
 
 
 """ —————————————————————————————— """

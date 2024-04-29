@@ -96,20 +96,20 @@ export const useManageMainStore = defineStore('manageMainStore', () => {
     {
       id: '6',
       text: '充电宝管理',
-      iconName: markRaw(icons.IconCommunity),
+      iconName: markRaw(icons.IconPowerBank),
       router: '6',
       subMenu: [
         {
           id: '6-1',
           text: '充电宝投放管理',
-          iconName: markRaw(icons.IconCommunity),
+          iconName: markRaw(icons.IconSPBRelease),
           router: '/management/power-bank-release',
           subMenu: null
         },
         {
           id: '6-2',
           text: '充电宝维护管理',
-          iconName: markRaw(icons.IconCommunity),
+          iconName: markRaw(icons.IconSPBMaintenance),
           router: '/management/power-bank-maintenance',
           subMenu: null
         }
@@ -118,27 +118,27 @@ export const useManageMainStore = defineStore('manageMainStore', () => {
     {
       id: '7',
       text: '订单管理',
-      iconName: markRaw(icons.IconCommunity),
+      iconName: markRaw(icons.IconOrder),
       router: '7',
       subMenu: [
         {
           id: '7-1',
           text: '租赁订单',
-          iconName: markRaw(icons.IconCommunity),
+          iconName: markRaw(icons.IconOrderRental),
           router: '/management/rental-order',
           subMenu: null
         },
         {
           id: '7-2',
           text: '归还订单',
-          iconName: markRaw(icons.IconCommunity),
+          iconName: markRaw(icons.IconOrderReturn),
           router: '/management/return-order',
           subMenu: null
         },
         {
           id: '7-3',
           text: '费用订单',
-          iconName: markRaw(icons.IconCommunity),
+          iconName: markRaw(icons.IconOrderFee),
           router: '/management/fee-order',
           subMenu: null
         }
@@ -147,13 +147,13 @@ export const useManageMainStore = defineStore('manageMainStore', () => {
     {
       id: '8',
       text: '系统管理',
-      iconName: markRaw(icons.IconCommunity),
+      iconName: markRaw(icons.IconSystem),
       router: '8',
       subMenu: [
         {
           id: '8-1',
           text: '公告栏',
-          iconName: markRaw(icons.IconCommunity),
+          iconName: markRaw(icons.IconNotice),
           router: '/management/manage-notice',
           subMenu: null
         },

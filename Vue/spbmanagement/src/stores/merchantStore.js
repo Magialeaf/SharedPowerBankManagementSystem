@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import {
   getMerchantAPI,
   getMerchantListAPI,
+  getMerchantIdNameAPI,
   createMerchantAPI,
   updateMerchantAPI,
   deleteMerchantAPI,
@@ -33,7 +34,7 @@ export const useMerchantStore = defineStore('merchantList', () => {
     return getMerchantList(pageInfo.value.currentPage)
   }
 
-  // 通过ID获得区域
+  // 通过ID获得商户
   const getMerchant = (id) => {
     return getMerchantAPI(id)
       .then((res) => {
@@ -49,7 +50,14 @@ export const useMerchantStore = defineStore('merchantList', () => {
       })
   }
 
-  // 获得区域列表
+  // 通过areaId获得商户
+  const getMerchantByAreaId = async (areaId) => {
+    return getMerchantIdNameAPI(areaId)
+      .then((res) => res)
+      .catch(handleApiError)
+  }
+
+  // 获得商户列表
   const getMerchantList = (page, conditions = {}) => {
     pageInfo.value.currentPage = page
     getConditions.value = conditions
@@ -65,14 +73,14 @@ export const useMerchantStore = defineStore('merchantList', () => {
       .catch(handleApiError)
   }
 
-  // 创建区域
+  // 创建商户
   const createMerchant = (data = {}, ifRefresh = false) => {
     return createMerchantAPI(data)
       .then((res) => handleApiSuccess(res, ifRefresh))
       .catch(handleApiError)
   }
 
-  // 修改区域
+  // 修改商户
   const updateMerchant = (id, data = {}, ifRefresh = true) => {
     if (data.area_data) delete data.area_data
     if (data.areaCodeList) delete data.areaCodeList
@@ -82,7 +90,7 @@ export const useMerchantStore = defineStore('merchantList', () => {
       .catch(handleApiError)
   }
 
-  // 删除区域
+  // 删除商户
   const deleteMerchant = (id, ifRefresh = true) => {
     return deleteMerchantAPI(id)
       .then((res) => handleApiSuccess(res, ifRefresh))
@@ -128,6 +136,7 @@ export const useMerchantStore = defineStore('merchantList', () => {
     initMerchantList,
     getMerchant,
     getMerchantList,
+    getMerchantByAreaId,
     createMerchant,
     updateMerchant,
     deleteMerchant,

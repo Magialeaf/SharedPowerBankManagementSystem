@@ -8,7 +8,7 @@ class EnterThrottle(AnonThrottle):
 
 class UserThrottle(AnonThrottle):
     scope = "user"
-    THROTTLE_RATES = {scope: "30/m"}
+    THROTTLE_RATES = {scope: "60/m"}
 
 
 class AccountThrottle(AnonThrottle):

@@ -69,7 +69,7 @@ watch(selectArea, () => {
       keyAreaId: searchKey.value.keyAreaId
     })
     .then((res) => {
-      console.log(res)
+      // console.log(res)
     })
     .catch((e) => {})
 })
@@ -107,7 +107,7 @@ function handlePageChange(page) {
   }
 }
 
-function handleSearch(keyword) {
+function handleSearch(keyword = searchKey.value.keyword) {
   searchKey.value.keyword = keyword
   merchantStore
     .getMerchantList(1, {

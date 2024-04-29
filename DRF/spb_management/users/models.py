@@ -31,7 +31,6 @@ class Identity(Enum):
         return code in cls._value2member_map_
 
 
-
 class AccountInfo(models.Model):
     """ 用户表 """
     IDENTITY_CHOICES = tuple((identity.value, identity.display_name) for identity in Identity)

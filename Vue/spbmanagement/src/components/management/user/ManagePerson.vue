@@ -1,7 +1,7 @@
 <template>
   <div class="operation">
     <div class="left-operation">
-      <el-button type="primary" @click="ifAddNew = !ifAddNew">{{
+      <el-button type="primary" @click="switchAddNew">{{
         ifAddNew ? tip.listTip : tip.addTip
       }}</el-button>
     </div>
@@ -116,6 +116,13 @@ function handleSelectArea(id) {
 function handleClearCodeList() {
   codeList.value = ['00', '0000', '000000']
   handleSelectArea()
+}
+
+function switchAddNew() {
+  ifAddNew.value = !ifAddNew.value
+  if (!ifAddNew.value) {
+    userStore.initUserList(props.identityCode)
+  }
 }
 </script>
 

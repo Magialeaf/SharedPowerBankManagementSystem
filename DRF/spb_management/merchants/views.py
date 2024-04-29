@@ -33,6 +33,9 @@ class MerchantView(GetAndPostAPIView):
             page = kwargs.get("pk", 1)
             conditions, data = Internet.get_internet_data(request)
             return self.get_merchant_list(page, conditions)
+        elif action == "getIdList":
+            area_id = kwargs.get("pk", 0)
+            return self.get_merchant_id_list(area_id)
         return response(ResponseCode.ERROR, "请求参数错误", {})
 
     def post(self, request, version, **kwargs):
@@ -91,6 +94,14 @@ class MerchantView(GetAndPostAPIView):
             "pageSize": items_per_page,
         }
         return response(ResponseCode.SUCCESS, "获取区域列表成功", res.data, extra=extra)
+
+    def get_merchant_id_list(self, area_id):
+        if area_id == 0:
+            return response(ResponseCode.ERROR, "请求参数错误", {})
+
+        query = MerchantInfo.objects.filter(area=area_id).values("id", 'shop_name')
+        data = [{"id": i["id"], "name": i["shop_name"]} for i in query]
+        return response(ResponseCode.SUCCESS, "获取区域列表成功", data)
     
     def create_merchant(self, request):
         conditions, data = Internet.get_internet_data(request)

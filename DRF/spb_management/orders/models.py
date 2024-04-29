@@ -6,14 +6,14 @@ class PowerBankRentalInfo(models.Model):
     power_bank = models.ForeignKey("power_bank.PowerBankInfo", verbose_name="充电宝", on_delete=models.CASCADE)
     user = models.ForeignKey("users.UserInfo", verbose_name="用户", on_delete=models.CASCADE)
     returned = models.BooleanField(verbose_name="是否归还", default=False)
-    rental_date = models.DateTimeField(verbose_name="开始日期", auto_now_add=True)
+    rental_date = models.DateTimeField(verbose_name="开始时间", auto_now_add=True)
 
 
 class PowerBankReturnInfo(models.Model):
     id = models.AutoField(verbose_name="id", primary_key=True)
     power_bank = models.ForeignKey("power_bank.PowerBankInfo", verbose_name="充电宝", on_delete=models.CASCADE)
     user = models.ForeignKey("users.UserInfo", verbose_name="用户", on_delete=models.CASCADE)
-    return_date = models.DateTimeField(verbose_name="归还日期", auto_now_add=True)
+    return_date = models.DateTimeField(verbose_name="归还时间", auto_now_add=True)
 
 
 class PowerBankFeeInfo(models.Model):

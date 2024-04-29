@@ -37,6 +37,12 @@ export const deleteOneInfoAPI = (id) => deleteByPkAPI(oneInfoURL, id)
 export const getUserListAPI = (page, conditions) =>
   getByPkAPI(userURL, page, conditions, [], 'getList')
 
+// 获得用户名字
+export const getUserNameListAPI = () => getByPkAPI(userURL, 0, {}, [], 'getNameList')
+
+// 获得维护人员名字
+export const getMaintainNameListAPI = () => getByPkAPI(userURL, 0, {}, [], 'getMaintainNameList')
+
 // 上传头像
 export const uploadAvatarAPI = (fileData) => uploadImageAPI(userAvatarURL, fileData)
 

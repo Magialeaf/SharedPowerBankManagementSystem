@@ -16,7 +16,6 @@ import {
 import { useAddressStore } from '@/stores/areaStore.js'
 import { createPageInfo } from '@/stores/pageInfo.js'
 import { useIdentityStore } from './authenticationStore'
-import { sortOrders } from 'element-plus/es/components/table-v2/src/constants'
 
 export const useUserStore = defineStore('userList', () => {
   const defaultAvatarURL = ref('http://127.0.0.1:8000/media/images/user_avatars/default.png')
@@ -43,7 +42,7 @@ export const useUserStore = defineStore('userList', () => {
   // 初始化数据
   const initUserList = (identity) => {
     constConditions.value.identity = identity
-    return getUserList(pageInfo.value.currentPage)
+    return getUserList(pageInfo.value.currentPage, {})
   }
 
   // 获得个人信息

@@ -67,7 +67,7 @@ class AreaView(GetAndPostAPIView):
         if cache_data:
             return response(ResponseCode.SUCCESS, "获取区域成功", cache_data)
 
-        query = AreaInfo.objects.filter(id=id_).first()
+        query = AreaInfo.objects.filter(id=id_).values().first()
         if query is None:
             return response(ResponseCode.ERROR, "区域不存在", {})
 

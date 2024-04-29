@@ -21,7 +21,7 @@ export const powerBankReturnURL = v1 + '/power-bank-return/'
 // DRF: power_bank
 export const powerBankURL = v1 + '/power-bank/'
 export const powerBankImgURL = v1 + '/power-bank/img/'
-export const powerBankMaintenance = v1 + '/power-bank/maintenance/'
+export const powerBankMaintenanceURL = v1 + '/power-bank/maintenance/'
 
 // DRF: system_administration
 export const carouselChartURL = v1 + '/system-administration/carousel-chart/'

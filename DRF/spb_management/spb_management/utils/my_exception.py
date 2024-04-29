@@ -7,6 +7,7 @@ from spb_management.router.response_data import ResponseCode, response, response
 
 # 序列化异常处理
 def validation_exception(e):
+    print(e)
     # 检查 e.detail 的类型，如果是字典则按原逻辑处理，否则假设为列表
     if isinstance(e.detail, dict):
         first_key = next(iter(e.detail.keys()))

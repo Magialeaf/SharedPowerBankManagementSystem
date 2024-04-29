@@ -7,15 +7,20 @@
     </div>
     <div v-if="!ifAddNewSPB" class="right-operation">
       <div class="search-SPB">
-        <!--<SelectAddress />-->
+        <SelectAddress
+          :codeList="codeList"
+          :areaOption="selectArea"
+          @select-area="handleSelectArea"
+          @clear-code-list="handleClearCodeList"
+        />
         <Search @search="handleSearch" searchTip="搜素充电宝名称、商户名称" />
       </div>
     </div>
   </div>
   <div v-if="!ifAddNewSPB" class="SPB-list">
-    <SPBList :SPBData="SPBList" />
+    <SPBList :powerBankData="powerBankList" />
     <div class="pagination">
-      <Pagination :pageInfo="SPBStore.getPageInfo()" @page-change="handlePageChange" />
+      <Pagination :pageInfo="powerBankStore.getPageInfo()" @page-change="handlePageChange" />
     </div>
   </div>
   <SPBOperation :ifNew="true" v-else />
@@ -25,96 +30,88 @@
 import { ref, onBeforeMount, computed, watch } from 'vue'
 import { useSPBStore } from '@/stores/SPBStore.js'
 import { lockFunction } from '@/utils/myLock'
-// import { useAreaStore } from '@/stores/areaStore'
+import { useAreaStore } from '@/stores/areaStore'
 import Search from '@/components/management/utils/Search.vue'
 import SPBList from '@/components/management/spbRelease/SPBReleaseList.vue'
-import SPBOperation from '@/components/management/spbRelease/SPBReleaseOperation.vue'
 import Pagination from '@/components/management/utils/Pagination.vue'
 import SelectAddress from '@/components/management/utils/SelectAddress.vue'
+import SPBOperation from '@/components/management/spbRelease/SPBReleaseOperation.vue'
 
 const ifAddNewSPB = ref(false)
-// const codeList = ref(['00', '0000', '000000'])
-// const searchKey = ref({
-//   keyword: '',
-//   keyAreaId: ''
-// })
-// const selectArea = ref('')
 
-// const areaStore = useAreaStore()
-const SPBStore = useSPBStore()
+const codeList = ref(['00', '0000', '000000'])
+const searchKey = ref({
+  keyword: '',
+  keyAreaId: ''
+})
+const selectArea = ref('')
 
-// const areaOptions = ref([])
-// const SPBList = computed(() => SPBStore.getList())
+const powerBankStore = useSPBStore()
 
-// onBeforeMount(() => initList())
+const powerBankList = computed(() => powerBankStore.showList())
 
-// watch(selectArea, () => {
-//   searchKey.value.keyAreaId = selectArea.value
-//   SPBStore.getSPBList(1, {
-//     keyword: searchKey.value.keyword,
-//     keyAreaId: searchKey.value.keyAreaId
-//   })
-//     .then((res) => {
-//       console.log(res)
-//     })
-//     .catch((e) => {})
-// })
-// function initList() {
-//   SPBStore.initSPBList()
-//     .then((res) => {})
-//     .catch((e) => {})
-// }
+onBeforeMount(() => initList())
+
+watch(selectArea, () => {
+  searchKey.value.keyAreaId = selectArea.value
+  powerBankStore
+    .getList(1, {
+      keyword: searchKey.value.keyword,
+      keyAreaId: searchKey.value.keyAreaId
+    })
+    .then((res) => {})
+    .catch((e) => {})
+})
+
+function initList() {
+  powerBankStore
+    .initList()
+    .then((res) => {})
+    .catch((e) => {})
+}
 
 function switchAddNewSPB() {
   ifAddNewSPB.value = !ifAddNewSPB.value
-  //   if (ifAddNewSPB.value === false) {
-  //     SPBStore.getSPBList(SPBStore.getPageInfo().currentPage)
-  //       .then((res) => {})
-  //       .catch((e) => {})
-  //   }
+  if (!ifAddNewSPB.value) {
+    powerBankStore.initList()
+  }
+}
+function handlePageChange(page) {
+  if (searchKey.value) {
+    powerBankStore
+      .getList(page, {
+        keyword: searchKey.value.keyword,
+        keyAreaId: searchKey.value.keyAreaId
+      })
+      .then()
+      .catch()
+  } else {
+    powerBankStore
+      .getList(page)
+      .then((res) => {})
+      .catch((e) => {})
+  }
 }
 
-// function handlePageChange(page) {
-//   if (searchKey.value) {
-//     SPBStore.getSPBList(page, {
-//       keyword: searchKey.value.keyword,
-//       keyAreaId: searchKey.value.keyAreaId
-//     })
-//       .then()
-//       .catch()
-//   } else {
-//     SPBStore.getSPBList(page)
-//       .then((res) => {})
-//       .catch((e) => {})
-//   }
-// }
+function handleSearch(keyword) {
+  searchKey.value.keyword = keyword
+  powerBankStore
+    .getList(1, {
+      keyword: searchKey.value.keyword,
+      keyAreaId: searchKey.value.keyAreaId
+    })
+    .then()
+    .catch()
+}
 
-// function handleSearch(keyword) {
-//   searchKey.value.keyword = keyword
-//   SPBStore.getSPBList(1, {
-//     keyword: searchKey.value.keyword,
-//     keyAreaId: searchKey.value.keyAreaId
-//   })
-//     .then()
-//     .catch()
-// }
+function handleSelectArea(value) {
+  selectArea.value = value
+}
 
-// function handleSelect(lst) {
-//   areaStore
-//     .getAreaNameList(lst[0][2])
-//     .then((res) => {
-//       areaOptions.value = res.data
-//     })
-//     .catch((e) => {})
-//   codeList.value = lst[0]
-// }
-
-// const clearCode = lockFunction(1000)(() => {
-//   codeList.value = ['00', '0000', '000000']
-//   searchKey.value.keyAreaId = ''
-//   selectArea.value = ''
-//   areaOptions.value = []
-// })
+const handleClearCodeList = lockFunction(1000)(() => {
+  codeList.value = ['00', '0000', '000000']
+  selectArea.value = null
+})
 </script>
 
 <style scoped>

@@ -12,24 +12,24 @@ import { useAreaStore } from '@/stores/areaStore'
 
 const areaStore = useAreaStore()
 const areaOptions = ref([])
+const notFirst = ref(false)
 
 const props = defineProps({
   codeList: {
     type: Array
   },
-  areaOption: {
-    type: Number
-  }
+  areaOption: {}
 })
 
 const codeList = computed(() => props.codeList)
-const selectArea = ref(props.areaOption)
+const tempSelectArea = computed(() => props.areaOption)
+const selectArea = ref()
 
 const emits = defineEmits(['select-area', 'clear-code-list'])
 
 function handleSelect(lst) {
   areaStore
-    .getAreaNameList(lst[0][2])
+    .getAreaNameList(lst[0][2], notFirst.value)
     .then((res) => {
       areaOptions.value = res.data
     })
@@ -38,6 +38,14 @@ function handleSelect(lst) {
       selectArea.value = null
     })
 }
+
+watch(tempSelectArea, () => {
+  if (tempSelectArea.value !== selectArea.value) {
+    handleSelect([codeList.value])
+    notFirst.value = true
+    selectArea.value = tempSelectArea.value
+  }
+})
 
 watch(selectArea, (val) => {
   emits('select-area', val)
