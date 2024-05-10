@@ -31,7 +31,7 @@ drf_port = "8000"
 drf_url = f"http://{drf_ip}:{drf_port}"
 
 
-ALLOWED_HOSTS = [drf_ip, "39.101.75.20"]
+ALLOWED_HOSTS = [drf_ip]
 
 
 # Application definition
@@ -252,11 +252,11 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.163.com'
 EMAIL_PORT = 25
 # 发送邮件的邮箱
-EMAIL_HOST_USER = 'mugi831@163.com'
+EMAIL_HOST_USER = ''
 # 在邮箱中设置的授权密码
-EMAIL_HOST_PASSWORD = 'ENCFWJBUYPOSDMQI'
+EMAIL_HOST_PASSWORD = ''
 # 收件人看到的发件人
-DEFAULT_FROM_EMAIL = global_studio_name + '<mugi831@163.com>'
+DEFAULT_FROM_EMAIL = global_studio_name + ''
 
 
 # 配置文件存储目录
