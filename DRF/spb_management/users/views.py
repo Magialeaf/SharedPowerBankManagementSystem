@@ -189,8 +189,14 @@ class CaptchaView(GetAndPostAPIView):
 
 
 class UserView(GetAndPostAPIView):
-    permission_classes = [MoreAndAdminPermission, ]
     throttle_classes = [UserThrottle, ]
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            self.permission_classes = [MoreAndMaintainerPermission, ]
+        else:
+            self.permission_classes = [MoreAndAdminPermission, ]
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, version, **kwargs):
         action = request.GET.get("action", " ")
@@ -217,32 +223,35 @@ class UserView(GetAndPostAPIView):
         aid_values = set(AccountInfo.objects.filter(identity=identity).values_list('id', flat=True))
         user_query = QuerySet()
         if identity == Identity.USER.value:
-            keyword = conditions.get('keyword', None)
             base_query = Q()
-            if keyword:
+            if keyword := conditions.get('keyword', None):
                 match_fields = ['username', 'profile']
 
                 for field in match_fields:
                     base_query |= Q(**{f'{field}__icontains': keyword})
+            if sex := conditions.get('sex', None):
+                base_query &= Q(sex=sex)
 
             base_query &= Q(aid__in=aid_values)
             user_query = UserInfo.objects.filter(base_query)[start_index:start_index + items_per_page]
             total = UserInfo.objects.filter(base_query).count()
 
         if identity == Identity.MAINTAINER.value:
-            keyword = conditions.get('keyword', None)
-            area_id = conditions.get('areaId', None)
             base_query = Q()
 
-            if keyword:
+            if keyword := conditions.get('keyword', None):
                 match_fields = ['username', 'profile']
                 for field in match_fields:
                     base_query |= Q(**{f'{field}__icontains': keyword})
-            if area_id:
+
+            if area_id := conditions.get('areaId', None):
                 maintainers_in_area = set(MaintainInfo.objects.filter(area_id_id=area_id,aid_id__identity=identity).values_list('aid', flat=True))
                 base_query &= Q(aid__in=maintainers_in_area)
             else:
                 base_query &= Q(aid__in=aid_values)
+
+            if sex := conditions.get('sex', None):
+                base_query &= Q(sex=sex)
             user_query = UserInfo.objects.filter(base_query)[start_index:start_index + items_per_page]
             total = UserInfo.objects.filter(base_query).count()
 
@@ -270,7 +279,7 @@ class UserView(GetAndPostAPIView):
         return response(ResponseCode.SUCCESS, "获取成功", structured_data, extra=extra)
 
     def get_name_list(self):
-        query = UserInfo.objects.filter(aid__identity=Identity.USER.value).values("id", "username")
+        query = UserInfo.objects.filter().values("id", "username")
         data = [{"id": item["id"], "name": item["username"]} for item in query]
         return response(ResponseCode.SUCCESS, "获取成功", data)
 

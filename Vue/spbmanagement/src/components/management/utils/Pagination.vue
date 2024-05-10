@@ -15,12 +15,14 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
-// ElConfigProvider 组件
+import { defineProps, defineEmits, onMounted, ref, nextTick } from 'vue'
 import { ElConfigProvider } from 'element-plus'
-// 引入中文包
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
-// 更改分页文字
+
+// 初始化滚动行为的ref
+const scrollContainerRef = ref(null)
+
+// 修改分页文字
 zhCn.el.pagination.total = '共 {total} 条'
 zhCn.el.pagination.goto = '跳至'
 zhCn.el.pagination.pagesize = '条/页'
@@ -36,13 +38,27 @@ const prop = defineProps({
         return Object.prototype.hasOwnProperty.call(value, propName)
       })
     }
+  },
+  ifGoTop: {
+    type: Boolean,
+    default: true
   }
 })
 
 const emits = defineEmits(['page-change'])
-const handlePageChange = (page) => {
+
+// 处理页面变更事件，并滚动到顶部
+const handlePageChange = async (page) => {
   emits('page-change', page)
+  if (prop.ifGoTop) {
+    scrollContainerRef.value.scrollTop = 0
+  }
 }
+
+// 挂载时设置滚动容器的引用
+onMounted(() => {
+  scrollContainerRef.value = document.documentElement // 或者是特定的滚动容器选择器
+})
 </script>
 
 <style scoped>

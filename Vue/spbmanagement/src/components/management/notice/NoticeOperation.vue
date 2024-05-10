@@ -12,6 +12,22 @@
     <el-form-item label="标题">
       <el-input v-model="noticeInfo.title" :maxlength="20"></el-input>
     </el-form-item>
+    <el-form-item v-if="!ifNew" label="发布者用户ID">
+      <el-input v-model="noticeInfo.uid" :disabled="true"></el-input>
+    </el-form-item>
+    <el-form-item v-if="!ifNew" label="发布者用户名">
+      <el-input v-model="noticeInfo.uid_name" :disabled="true"></el-input>
+    </el-form-item>
+    <el-form-item label="图片">
+      <UploadImg
+        :imgUrl="noticeInfo.img"
+        :ifUpload="ifUploadValue"
+        :uploadFunc="noticeStore.uploadImg"
+        @updateIfUpload="updateIfUpload"
+        @updateImgUrl="updateImgUrl"
+        @uploadSuccess="afterUploadImgSuccess"
+      />
+    </el-form-item>
     <el-form-item label="内容">
       <el-input
         type="textarea"
@@ -45,7 +61,7 @@
 </template>
 
 <script setup>
-import { onBeforeMount, ref, defineProps, computed } from 'vue'
+import { onBeforeMount, ref, defineProps } from 'vue'
 import { useNoticeConfigStore, useNoticeStore } from '@/stores/noticeStore'
 import { lockFunction } from '@/utils/myLock'
 
@@ -57,6 +73,8 @@ const noticeInfo = ref({
   title: '',
   content: '',
   type: '0',
+  img: noticeStore.getDefaultImg(),
+  aid: '0',
   create_time: null,
   update_time: null
 })
@@ -73,8 +91,29 @@ const props = defineProps({
 })
 const ifNew = ref(props.ifNew)
 
+onBeforeMount(() => {
+  if (!ifNew.value) {
+    noticeStore.getInfo(props.id).then((res) => {
+      noticeInfo.value = res.data
+    })
+  }
+})
+
+const ifUploadValue = ref(false)
+function updateImgUrl(value) {
+  noticeInfo.value.img = value
+}
+const updateIfUpload = (value) => {
+  ifUploadValue.value = value
+}
+
 const onSubmit = lockFunction()(() => {
+  ifUploadValue.value = true
+})
+
+function afterUploadImgSuccess(value) {
   let inputData = { ...noticeInfo.value }
+  inputData.img = value.data.img
   delete inputData.power_bank_name
   delete inputData.user_name
   if (ifNew.value) {
@@ -92,15 +131,7 @@ const onSubmit = lockFunction()(() => {
       })
       .catch((err) => {})
   }
-})
-
-onBeforeMount(() => {
-  if (!ifNew.value) {
-    noticeStore.getInfo(props.id).then((res) => {
-      noticeInfo.value = res.data
-    })
-  }
-})
+}
 </script>
 
 <style scoped></style>

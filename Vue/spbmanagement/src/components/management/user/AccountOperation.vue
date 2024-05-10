@@ -77,16 +77,17 @@
   >
     <div
       v-if="
-        jwtTokenStore.getIdentity() === '超级管理员' || jwtTokenStore.getIdentity() === '管理员'
+        jwtTokenStore.getIdentityCode() === identityStore.SuperAdmin ||
+        jwtTokenStore.getIdentityCode() === identityStore.Admin
       "
     >
       <el-form-item v-if="accountInfo.id" label="身份">
         <el-select v-model="accountInfo.identity" placeholder="请选择身份">
           <el-option
-            v-for="item in identityStore.getCanModifyIdentityList()"
-            :key="item"
-            :label="item"
-            :value="item"
+            v-for="(label, key) in identityStore.getCanModifyIdentityList()"
+            :key="key"
+            :label="label"
+            :value="key"
           ></el-option>
         </el-select>
       </el-form-item>

@@ -7,14 +7,15 @@ from spb_management.base_class.GetAndPostAPIView import GetAndPostAPIView
 from spb_management.base_class.UploadImgAPI import UploadImgAPI
 from spb_management.router import Internet
 from spb_management.router.image_operation import ImgAPI, UploadImage
-from spb_management.router.permission import MoreAndAdminPermission
+from spb_management.router.permission import MoreAndAdminPermission, NotAnonPermission
 from spb_management.router.response_data import response, ResponseCode
 from spb_management.utils.my_exception import validation_exception
 from spb_management.utils.page_operation import set_extra_page
 from system_administration.models import CarouselChartInfo, NoticeInfo
 from system_administration.utils.serializer import CarouselChartSerializer, CarouselChartImgSerializer, NoticeSerializer
 from system_administration.utils.throttle import CarouselChartGetThrottle, CarouselChartPostThrottle, \
-    CarouselChartImgThrottle, NoticeThrottle
+    CarouselChartImgThrottle, NoticeThrottle, NoticeImgThrottle
+from users.models import Identity
 
 # Create your views here.
 """
@@ -86,13 +87,19 @@ class CarouselChartView(GetAndPostAPIView):
         start_index = (page - 1) * items_per_page
 
         if conditions:
-            keyword = conditions.get("keyword", None)
             base_query = Q()
-            if keyword:
+            if keyword := conditions.get("keyword", None):
                 match_fields = ['title']
                 for field in match_fields:
                     base_query |= Q(**{f'{field}__icontains': keyword})
-            area_values = CarouselChartInfo.objects.filter(base_query).values()[start_index:start_index + items_per_page]
+
+            if active := conditions.get("active", None):
+                base_query &= Q(active=active)
+
+            if not (order_by := conditions.get("order_by", None)):
+                order_by = []
+
+            area_values = CarouselChartInfo.objects.filter(base_query).order_by(*order_by).values()[start_index:start_index + items_per_page]
             total = CarouselChartInfo.objects.filter(base_query).count()
         else:
             area_values = CarouselChartInfo.objects.values()[start_index:start_index + items_per_page]
@@ -163,6 +170,14 @@ class NoticeView(CRUDInterface):
     permission_classes = [MoreAndAdminPermission, ]
     throttle_classes = [NoticeThrottle, ]
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            self.permission_classes = [NotAnonPermission, ]
+        else:
+            self.permission_classes = [MoreAndAdminPermission, ]
+
+        return super().dispatch(request, *args, **kwargs)
+
     def get_info(self, request, version, kwargs):
         id_ = kwargs.get("pk", None)
         query = NoticeInfo.objects.filter(id=id_).first()
@@ -181,10 +196,30 @@ class NoticeView(CRUDInterface):
 
         items_per_page = 10
         start_index = (page - 1) * items_per_page
+        base_query = Q()
+        if conditions:
+            if keyword := conditions.get("keyword", None):
+                match_fields = ['title', 'content', 'uid__username']
+                for field in match_fields:
+                    base_query |= Q(**{f'{field}__icontains': keyword})
+            order_by_data = conditions.get("order_by", None)
 
+            if type_ := conditions.get("type", None):
+                base_query &= Q(type=type_)
 
-        query = NoticeInfo.objects.all()[start_index:start_index + items_per_page]
-        total = NoticeInfo.objects.count()
+            if not (isinstance(order_by_data, list) and all(isinstance(item, str) for item in order_by_data)):
+                order_by_data = []
+        else:
+            order_by_data = []
+
+        identity = request.user.get("identity", None)
+        if identity == Identity.USER.value:
+            base_query &= Q(type=2)
+        elif identity == Identity.MAINTAINER.value:
+            base_query &= (Q(type=1) | Q(type=2))
+
+        query = NoticeInfo.objects.filter(base_query).order_by(*order_by_data)[start_index:start_index + items_per_page]
+        total = NoticeInfo.objects.filter(base_query).count()
 
         data = NoticeSerializer(query, many=True).data
         extra = set_extra_page(total, items_per_page)
@@ -193,6 +228,7 @@ class NoticeView(CRUDInterface):
 
     def create_info(self, request, version, kwargs):
         conditions, data = Internet.get_internet_data(request)
+        data['uid'] = request.user['uid']
         serializer = NoticeSerializer(data=data)
         try:
             serializer.is_valid(raise_exception=True)
@@ -228,4 +264,13 @@ class NoticeView(CRUDInterface):
             return response(ResponseCode.ERROR, "通知不存在", {})
 
 
+""" —————————————————————————————— """
+""" |          公告               | """
+""" —————————————————————————————— """
 
+
+class NoticeImgView(UploadImgAPI):
+    throttle_classes = [NoticeImgThrottle, ]
+
+    def __init__(self):
+        super().__init__(ImgAPI.notice_img_path)

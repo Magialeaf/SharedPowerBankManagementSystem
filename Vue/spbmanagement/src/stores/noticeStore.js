@@ -7,7 +7,8 @@ import {
   getNoticeListAPI,
   createNoticeAPI,
   updateNoticeAPI,
-  deleteNoticeAPI
+  deleteNoticeAPI,
+  uploadNoticeImgAPI
 } from '@/api/noticeAPI.js'
 import { convertBackendTimestampToLocalTime } from '@/utils/convert.js'
 
@@ -31,6 +32,7 @@ export const useNoticeConfigStore = defineStore('noticeConfig', () => {
 
 // 通知消息
 export const useNoticeStore = defineStore('noticeList', () => {
+  const defaultImg = ref('http://127.0.0.1:8000/media/images/notice_img/default.png')
   const noticeConfigStore = useNoticeConfigStore()
 
   const dataList = ref([])
@@ -40,6 +42,10 @@ export const useNoticeStore = defineStore('noticeList', () => {
   const uploadConditions = ref({})
 
   const pageInfo = ref(createPageInfo())
+
+  const getDefaultImg = () => {
+    return defaultImg.value
+  }
 
   const getPageInfo = () => {
     return pageInfo.value
@@ -55,7 +61,7 @@ export const useNoticeStore = defineStore('noticeList', () => {
   async function getInfo(id) {
     return getNoticeAPI(id)
       .then((res) => {
-        res.data.type = res.data.type.toString()
+        res.data.type_name = noticeConfigStore.getType(res.data.type)
         res.data.create_time = convertBackendTimestampToLocalTime(res.data.create_time)
         res.data.update_time = convertBackendTimestampToLocalTime(res.data.update_time)
         return res
@@ -100,12 +106,22 @@ export const useNoticeStore = defineStore('noticeList', () => {
       .then((res) => handleApiSuccess(res, true))
       .catch(handleApiError)
   }
+
+  async function uploadImg(fileData) {
+    return uploadNoticeImgAPI(fileData)
+      .then((res) => res)
+      .catch(handleApiError)
+  }
+
   function extraOperation(data) {
-    data.forEach((item) => {
-      item.type_name = noticeConfigStore.getType(item.type)
-      item.create_time = convertBackendTimestampToLocalTime(item.create_time)
-      item.update_time = convertBackendTimestampToLocalTime(item.update_time)
-    })
+    if (data && data.length) {
+      data.forEach((item) => {
+        item.type_name = noticeConfigStore.getType(item.type)
+        item.create_time = convertBackendTimestampToLocalTime(item.create_time)
+        item.update_time = convertBackendTimestampToLocalTime(item.update_time)
+      })
+    }
+
     return data
   }
 
@@ -124,12 +140,14 @@ export const useNoticeStore = defineStore('noticeList', () => {
 
   return {
     getPageInfo,
+    getDefaultImg,
     showList,
     initList,
     getInfo,
     getList,
     createInfo,
     updateInfo,
-    deleteInfo
+    deleteInfo,
+    uploadImg
   }
 })

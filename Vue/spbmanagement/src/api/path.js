@@ -12,21 +12,25 @@ export const areaURL = v1 + '/area/'
 // DRF: merchants
 export const merchantURL = v1 + '/merchant/'
 export const merchantImgURL = v1 + '/merchant/img/'
+export const hotMerchantURL = v1 + '/hot-merchant/'
 
 // DRF: orders
 export const powerBankFeeURL = v1 + '/power-bank-fee/'
 export const powerBankRentalURL = v1 + '/power-bank-rental/'
 export const powerBankReturnURL = v1 + '/power-bank-return/'
+export const userOrderOperationURL = v1 + '/user-order-operation/'
 
 // DRF: power_bank
 export const powerBankURL = v1 + '/power-bank/'
 export const powerBankImgURL = v1 + '/power-bank/img/'
 export const powerBankMaintenanceURL = v1 + '/power-bank/maintenance/'
+export const hotPowerBankURL = v1 + '/hot-power-bank/'
 
 // DRF: system_administration
 export const carouselChartURL = v1 + '/system-administration/carousel-chart/'
 export const carouselChartImgURL = v1 + '/system-administration/carousel-chart/img/'
 export const noticeURL = v1 + '/system-administration/notice/'
+export const noticeImgURL = v1 + '/system-administration/notice/img/'
 
 // DRF：users
 export const enterURL = v1 + '/enter/'

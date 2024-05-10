@@ -20,7 +20,9 @@
             :value="item.id"
           />
         </el-select>
-        <el-button class="search-btn" type="primary" @click="clearCode()">清空</el-button>
+        <el-button class="search-btn" type="primary" @click="clearCode()" style="margin-right: 10px"
+          >清空</el-button
+        >
         <Search @search="handleSearch" searchTip="搜素名称、地址、联系人" />
       </div>
     </div>

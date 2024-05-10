@@ -1,11 +1,12 @@
 import {
+  getAPI,
   getByPkAPI,
   createByPkAPI,
   updateByPkAPI,
   deleteByPkAPI,
   uploadImageAPI
 } from './APIBase.js'
-import { merchantURL, merchantImgURL } from '@/api/path.js'
+import { merchantURL, merchantImgURL, hotMerchantURL } from '@/api/path.js'
 
 // 查询当前商户信息
 export const getMerchantAPI = (id) => getByPkAPI(merchantURL, id)
@@ -28,3 +29,7 @@ export const deleteMerchantAPI = (id) => deleteByPkAPI(merchantURL, id)
 
 // 上传商户图片
 export const uploadMerchantImgAPI = (fileData) => uploadImageAPI(merchantImgURL, fileData)
+
+/* 热门商户 */
+export const getHotMerchantListAPI = (conditions) =>
+  getAPI(hotMerchantURL, conditions, [], 'getList')

@@ -32,7 +32,12 @@
     </div>
   </div>
   <div v-if="!ifAddNewSPB" class="SPB-list">
-    <SPBList :powerBankData="powerBankMaintenanceList" />
+    <SPBList
+      :powerBankData="powerBankMaintenanceList"
+      @filter-status="handleFilterStatus"
+      @filter-finished="handleFilterFinished"
+      @sort-by="handleSortBy"
+    />
     <div class="pagination">
       <Pagination
         :pageInfo="powerBankMaintenanceStore.getPageInfo()"
@@ -56,7 +61,10 @@ const ifAddNewSPB = ref(false)
 
 const searchKey = ref({
   power_bank: '',
-  maintainer_account: ''
+  maintainer_account: '',
+  status: '',
+  finished: '',
+  order_by: []
 })
 
 const powerBankMaintenanceStore = useSPBMaintenanceStore()
@@ -109,14 +117,29 @@ function handlePageChange(page) {
 function clearSearch() {
   searchKey.value.power_bank = ''
   searchKey.value.maintainer_account = ''
+  handleSearch(1)
+}
+
+function handleSearch(page = powerBankMaintenanceStore.getPageInfo().currentPage) {
+  powerBankMaintenanceStore
+    .getList(page, searchKey.value)
+    .then((res) => {})
+    .catch((e) => {})
+}
+
+function handleFilterStatus(value) {
+  searchKey.value.status = value
   handleSearch()
 }
 
-function handleSearch() {
-  powerBankMaintenanceStore
-    .getList(1, searchKey.value)
-    .then((res) => {})
-    .catch((e) => {})
+function handleFilterFinished(value) {
+  searchKey.value.finished = value
+  handleSearch()
+}
+
+function handleSortBy(value) {
+  searchKey.value.order_by = [value]
+  handleSearch()
 }
 </script>
 

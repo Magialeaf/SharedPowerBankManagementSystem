@@ -4,7 +4,7 @@
       switchValue ? '切换至账户信息' : '切换至用户信息'
     }}</el-button>
     <el-button
-      v-if="props.identityCode == identityStore.Maintainer"
+      v-if="accountInfo.identity == identityStore.Maintainer"
       type="primary"
       @click="maintenanceValue = true"
       >{{ '切换至区域管理' }}</el-button

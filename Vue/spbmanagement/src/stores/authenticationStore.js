@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useIdentityStore = defineStore('Identity', () => {
-  // const SuperAdmin = 0
+  const SuperAdmin = 0
   const Admin = 1
   const Maintainer = 10
   const User = 11
@@ -49,7 +49,7 @@ export const useIdentityStore = defineStore('Identity', () => {
   }
 
   return {
-    // SuperAdmin,
+    SuperAdmin,
     Admin,
     Maintainer,
     User,
@@ -91,10 +91,22 @@ export const useJwtTokenStore = defineStore('JwtTokenStudio', () => {
     }
   }
 
+  const getUid = () => {
+    if (jwtToken.value === null) return null
+
+    return jwtDataToJson().uid
+  }
+
   const getIdentity = () => {
     if (jwtToken.value === null) return null
 
     return identityStore.getIdentity(jwtDataToJson().identity)
+  }
+
+  const getIdentityCode = () => {
+    if (jwtToken.value === null) return null
+
+    return jwtDataToJson().identity
   }
 
   const initJwtToken = () => {
@@ -107,6 +119,8 @@ export const useJwtTokenStore = defineStore('JwtTokenStudio', () => {
     getJwtToken,
     setJwtToken,
     clearJwtToken,
-    getIdentity
+    getIdentity,
+    getIdentityCode,
+    getUid
   }
 })

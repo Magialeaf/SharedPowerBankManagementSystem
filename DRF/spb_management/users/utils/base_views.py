@@ -102,7 +102,6 @@ class OneUserBase(GetAndPostAPIView):
         user_query.delete()
         return response(ResponseCode.SUCCESS, "删除成功", {})
 
-
     def validate_identity(self, request):
         user_identity = request.user.get("identity", "")
         if user_identity == Identity.SUPER_ADMIN.value:

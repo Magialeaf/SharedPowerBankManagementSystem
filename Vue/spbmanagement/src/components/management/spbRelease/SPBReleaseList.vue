@@ -1,5 +1,11 @@
 <template>
-  <el-table :data="powerBankList" stripe border>
+  <el-table
+    :data="powerBankList"
+    stripe
+    border
+    @filter-change="handleFilter"
+    @sort-change="handleSortChange"
+  >
     <el-table-column class="table-column" min-width="7%" prop="id" label="id" />
     <el-table-column class="table-column" min-width="10%" prop="name" label="充电宝名称" />
     <el-table-column class="table-column" min-width="10%" label="充电宝图片">
@@ -7,16 +13,33 @@
         <img :src="scope.row.img" alt="图片" style="width: 100px; height: 100px" />
       </template>
     </el-table-column>
-    <el-table-column class="table-column" min-width="8%" prop="status" label="充电宝状态" />
-    <el-table-column class="table-column" min-width="13%" prop="areaName" label="所属地址" />
-    <el-table-column class="table-column" min-width="13%" prop="merchantName" label="所属商户" />
-    <el-table-column class="table-column" min-width="10%" prop="hourly_fee" label="每小时费用" />
     <el-table-column
       class="table-column"
+      :filters="statusList"
+      :filter-multiple="false"
+      column-key="status"
+      min-width="10%"
+      prop="status_name"
+      label="充电宝状态"
+    />
+    <el-table-column class="table-column" min-width="11%" prop="areaName" label="所属地址" />
+    <el-table-column class="table-column" min-width="13%" prop="merchantName" label="所属商户" />
+    <el-table-column
+      class="table-column"
+      sortable="custom"
+      min-width="10%"
+      prop="hourly_fee"
+      label="每小时费用"
+    />
+    <el-table-column
+      class="table-column"
+      sortable="custom"
       min-width="10%"
       prop="electricity_percentage"
       label="电量百分比"
-    />
+    >
+      <template v-slot:default="{ row }"> {{ row.electricity_percentage }}% </template>
+    </el-table-column>
 
     <el-table-column min-width="14%" label="操作">
       <template v-slot="scope">
@@ -34,10 +57,18 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { $confirmDeleteMsg, $errorMsg } from '@/utils/msg'
-import { useSPBStore } from '@/stores/SPBStore'
+import { useSPBStore, useSPBConfigStore } from '@/stores/SPBStore'
 import SPBReleaseOperation from '@/components/management/spbRelease/SPBReleaseOperation.vue'
 
 const powerBankStore = useSPBStore()
+const powerBankConfigStore = useSPBConfigStore()
+
+const statusList = computed(() =>
+  Object.entries(powerBankConfigStore.getPowerBankStatusChoices()).map(([value, text]) => ({
+    text,
+    value: parseInt(value)
+  }))
+)
 
 const powerBankList = computed(() => prop.powerBankData)
 
@@ -63,6 +94,21 @@ function deleteRow(row) {
     .catch(() => {
       $errorMsg('取消删除')
     })
+}
+
+const emits = defineEmits(['filter-status', 'sort-by'])
+
+function handleFilter(filters) {
+  emits('filter-status', filters.status[0])
+}
+
+function handleSortChange(value) {
+  const { prop, order } = value
+  if (order === 'ascending') {
+    emits('sort-by', `${prop}`)
+  } else {
+    emits('sort-by', `-${prop}`)
+  }
 }
 </script>
 

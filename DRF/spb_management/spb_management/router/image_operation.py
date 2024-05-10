@@ -15,11 +15,13 @@ class ImgAPI:
     __merchant_img_path = "/merchant_img/"
     __carousel_chart_path = "/carousel_chart/"
     __power_bank_img_path = "/power_bank_img/"
+    __notice_img_path = "/notice_img/"
 
     user_avatar_path = RELATIVE_MEDIA_URL + __images + __avatar_path
     merchant_img_path = RELATIVE_MEDIA_URL + __images + __merchant_img_path
     carousel_chart_path = RELATIVE_MEDIA_URL + __images + __carousel_chart_path
     power_bank_img_path = RELATIVE_MEDIA_URL + __images + __power_bank_img_path
+    notice_img_path = RELATIVE_MEDIA_URL + __images + __notice_img_path
 
     default_avatar_path = MEDIA_ADDR + MEDIA_URL + __images + __avatar_path + "default.png"
 
@@ -38,6 +40,10 @@ class ImgAPI:
     @staticmethod
     def get_power_bank_img(name):
         return ImgAPI.get_url(ImgAPI.power_bank_img_path, name)
+
+    @staticmethod
+    def get_notice_img(name):
+        return ImgAPI.get_url(ImgAPI.notice_img_path, name)
 
     @staticmethod
     def get_url(base_url, name):

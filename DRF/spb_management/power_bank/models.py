@@ -16,6 +16,14 @@ POWER_BANK_ERROR_STATUS_CHOICES = (
     (4, "已报废"),
 )
 
+# 创建一个字典映射整数值到状态描述
+class StatusDescription:
+    free = 0
+    charging = 1
+    borrowed = 2
+    error = 3
+    scrap = 4
+
 
 class PowerBankInfo(models.Model):
     id = models.AutoField(verbose_name="id", primary_key=True)

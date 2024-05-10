@@ -1,5 +1,11 @@
 <template>
-  <el-table :data="powerBankList" stripe border>
+  <el-table
+    :data="powerBankList"
+    stripe
+    border
+    @filter-change="handleFilter"
+    @sort-change="handleSort"
+  >
     <el-table-column class="table-column" min-width="5%" prop="id" label="id" />
     <el-table-column class="table-column" min-width="5%" prop="power_bank" label="充电宝id" />
     <el-table-column
@@ -8,7 +14,15 @@
       prop="power_bank_name"
       label="充电宝名称"
     />
-    <el-table-column class="table-column" min-width="7%" prop="status" label="维护状态" />
+    <el-table-column
+      class="table-column"
+      column-key="status"
+      :filters="statusList"
+      :filter-multiple="false"
+      min-width="7%"
+      prop="status"
+      label="维护状态"
+    />
     <el-table-column
       class="table-column"
       min-width="5%"
@@ -27,8 +41,22 @@
       prop="question_description"
       label="问题描述"
     />
-    <el-table-column class="table-column" min-width="5%" prop="finished" label="是否处理" />
-    <el-table-column class="table-column" min-width="10%" prop="date" label="处理日期" />
+    <el-table-column
+      class="table-column"
+      column-key="finished"
+      :filters="finishedFilters"
+      :filter-multiple="false"
+      min-width="5%"
+      prop="finished"
+      label="是否处理"
+    />
+    <el-table-column
+      class="table-column"
+      sortable="custom"
+      min-width="10%"
+      prop="date"
+      label="处理日期"
+    />
     <el-table-column
       class="table-column"
       min-width="14%"
@@ -52,12 +80,25 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { $confirmDeleteMsg, $errorMsg } from '@/utils/msg'
-import { useSPBMaintenanceStore } from '@/stores/SPBStore'
+import { useSPBMaintenanceStore, useSPBConfigStore } from '@/stores/SPBStore'
 import SPBMaintenanceOperation from '@/components/management/spbMaintenance/SPBMaintenanceOperation.vue'
 
 const powerBankStore = useSPBMaintenanceStore()
+const configStore = useSPBConfigStore()
 
 const powerBankList = computed(() => prop.powerBankData)
+
+const statusList = computed(() =>
+  Object.entries(configStore.getPowerBankStatusChoices()).map(([value, text]) => ({
+    text,
+    value: parseInt(value)
+  }))
+)
+
+const finishedFilters = ref([
+  { text: '是', value: 1 },
+  { text: '否', value: 0 }
+])
 
 const drawer = ref(false)
 const selectedId = ref(undefined)
@@ -81,6 +122,21 @@ function deleteRow(row) {
     .catch(() => {
       $errorMsg('取消删除')
     })
+}
+
+const emits = defineEmits(['filter-status', 'filter-finished', 'sort-by'])
+
+function handleFilter(filters) {
+  if (filters.status) emits('filter-status', filters.status[0])
+  if (filters.finished) emits('filter-finished', filters.finished[0])
+}
+function handleSort(sortBy) {
+  const { prop, order } = sortBy
+  if (order === 'ascending') {
+    emits('sort-by', `${prop}`)
+  } else {
+    emits('sort-by', `-${prop}`)
+  }
 }
 </script>
 

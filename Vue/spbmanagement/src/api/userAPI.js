@@ -37,7 +37,7 @@ export const deleteOneInfoAPI = (id) => deleteByPkAPI(oneInfoURL, id)
 export const getUserListAPI = (page, conditions) =>
   getByPkAPI(userURL, page, conditions, [], 'getList')
 
-// 获得用户名字
+// 获得全部用户名字
 export const getUserNameListAPI = () => getByPkAPI(userURL, 0, {}, [], 'getNameList')
 
 // 获得维护人员名字

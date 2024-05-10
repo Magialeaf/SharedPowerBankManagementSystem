@@ -69,7 +69,7 @@ function register() {
       router.push('/')
     })
     .catch((e) => {
-      console.log(registerValue.value)
+      // console.log(registerValue.value)
     })
 }
 </script>

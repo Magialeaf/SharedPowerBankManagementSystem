@@ -1,5 +1,10 @@
 import { getByPkAPI, createByPkAPI, updateByPkAPI, deleteByPkAPI } from '@/api/APIBase'
-import { powerBankFeeURL, powerBankRentalURL, powerBankReturnURL } from '@/api/path'
+import {
+  powerBankFeeURL,
+  powerBankRentalURL,
+  powerBankReturnURL,
+  userOrderOperationURL
+} from '@/api/path'
 
 /* 租赁的CRUD */
 export const getOrderRentalAPI = (id) => getByPkAPI(powerBankRentalURL, id)
@@ -39,3 +44,19 @@ export const updateOrderFeeAPI = (id, conditions = {}, data = {}) =>
   updateByPkAPI(powerBankFeeURL, id, conditions, data)
 
 export const deleteOrderFeeAPI = (id) => deleteByPkAPI(powerBankFeeURL, id)
+
+/* 用户操作 */
+// 获得订单列表
+export const getOrderListAPI = (page, conditions) =>
+  getByPkAPI(userOrderOperationURL, page, conditions, [], 'getList')
+
+// 租用充电宝
+export const rentalPowerBankAPI = (data = {}) => createByPkAPI(userOrderOperationURL, 0, data)
+
+// 归还充电宝
+export const returnPowerBankAPI = (id, conditions = {}, data = {}) =>
+  updateByPkAPI(userOrderOperationURL, id, { ...conditions, type: 'return' }, data)
+
+// 缴费
+export const payFeeAPI = (id, conditions = {}, data = {}) =>
+  updateByPkAPI(userOrderOperationURL, id, { ...conditions, type: 'fee' }, data)

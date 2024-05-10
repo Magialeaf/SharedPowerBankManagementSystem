@@ -19,3 +19,8 @@ class CarouselChartImgThrottle(AuthThrottle):
 class NoticeThrottle(AuthThrottle):
     scope = "notice"
     THROTTLE_RATES = {"notice": "30/m"}
+
+
+class NoticeImgThrottle(AuthThrottle):
+    scope = "notice_img"
+    THROTTLE_RATES = {"notice_img": "10/m"}

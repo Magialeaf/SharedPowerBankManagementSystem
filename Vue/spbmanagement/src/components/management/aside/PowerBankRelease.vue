@@ -18,7 +18,11 @@
     </div>
   </div>
   <div v-if="!ifAddNewSPB" class="SPB-list">
-    <SPBList :powerBankData="powerBankList" />
+    <SPBList
+      :powerBankData="powerBankList"
+      @filter-status="handleFilterStatus"
+      @sort-by="handleSortBy"
+    />
     <div class="pagination">
       <Pagination :pageInfo="powerBankStore.getPageInfo()" @page-change="handlePageChange" />
     </div>
@@ -42,7 +46,9 @@ const ifAddNewSPB = ref(false)
 const codeList = ref(['00', '0000', '000000'])
 const searchKey = ref({
   keyword: '',
-  keyAreaId: ''
+  keyAreaId: '',
+  status: null,
+  order_by: []
 })
 const selectArea = ref('')
 
@@ -55,10 +61,7 @@ onBeforeMount(() => initList())
 watch(selectArea, () => {
   searchKey.value.keyAreaId = selectArea.value
   powerBankStore
-    .getList(1, {
-      keyword: searchKey.value.keyword,
-      keyAreaId: searchKey.value.keyAreaId
-    })
+    .getList(1, searchKey.value)
     .then((res) => {})
     .catch((e) => {})
 })
@@ -79,12 +82,9 @@ function switchAddNewSPB() {
 function handlePageChange(page) {
   if (searchKey.value) {
     powerBankStore
-      .getList(page, {
-        keyword: searchKey.value.keyword,
-        keyAreaId: searchKey.value.keyAreaId
-      })
-      .then()
-      .catch()
+      .getList(page, searchKey.value)
+      .then((res) => {})
+      .catch((e) => {})
   } else {
     powerBankStore
       .getList(page)
@@ -96,12 +96,25 @@ function handlePageChange(page) {
 function handleSearch(keyword) {
   searchKey.value.keyword = keyword
   powerBankStore
-    .getList(1, {
-      keyword: searchKey.value.keyword,
-      keyAreaId: searchKey.value.keyAreaId
-    })
-    .then()
-    .catch()
+    .getList(1, searchKey.value)
+    .then((res) => {})
+    .catch((e) => {})
+}
+
+function handleFilterStatus(status) {
+  searchKey.value.status = status
+  powerBankStore
+    .getList(powerBankStore.getPageInfo().currentPage, searchKey.value)
+    .then((res) => {})
+    .catch((e) => {})
+}
+
+function handleSortBy(value) {
+  searchKey.value.order_by = [value]
+  powerBankStore
+    .getList(powerBankStore.getPageInfo().currentPage, searchKey.value)
+    .then((res) => {})
+    .catch((e) => {})
 }
 
 function handleSelectArea(value) {

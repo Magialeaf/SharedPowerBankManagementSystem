@@ -13,31 +13,49 @@ const routes = [
         path: '/home',
         name: 'home',
         meta: { requiresAuth: true },
-        component: () => import('@/components/home/index/Home.vue')
+        component: () => import('@/components/home/header/Home.vue')
       },
       {
         path: '/partner',
         name: 'partner',
         meta: { requiresAuth: true },
-        component: () => import('@/components/home/index/Partner.vue')
+        component: () => import('@/components/home/header/Partner.vue')
+      },
+      {
+        path: '/partner/:id', // 动态路由参数
+        name: 'partner-id',
+        meta: { requiresAuth: true },
+        component: () => import('@/components/home/partner/PartnerHome.vue')
       },
       {
         path: '/product',
         name: 'product',
         meta: { requiresAuth: true },
-        component: () => import('@/components/home/index/Product.vue')
+        component: () => import('@/components/home/header/Product.vue')
+      },
+      {
+        path: '/product/:id',
+        name: 'product-id',
+        meta: { requiresAuth: true },
+        component: () => import('@/components/home/product/ProductHome.vue')
       },
       {
         path: '/notice',
         name: 'notice',
         meta: { requiresAuth: true },
-        component: () => import('@/components/home/index/Notice.vue')
+        component: () => import('@/components/home/header/Notice.vue')
+      },
+      {
+        path: '/notice/:id',
+        name: 'notice-id',
+        meta: { requiresAuth: true },
+        component: () => import('@/components/home/notice/NoticeHome.vue')
       },
       {
         path: '/user',
         name: 'user',
         meta: { requiresAuth: true },
-        component: () => import('@/components/home/index/User.vue')
+        component: () => import('@/components/home/header/User.vue')
       }
     ]
   },

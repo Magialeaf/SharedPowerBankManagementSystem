@@ -1,11 +1,17 @@
 <template>
   <div class="carousel-container">
-    <el-carousel v-if="imgList" :interval="4000" type="card" height="220px">
+    <el-carousel
+      v-if="imgList"
+      direction="vertical"
+      trigger="click"
+      :interval="4000"
+      height="300px"
+    >
       <el-carousel-item v-for="item in imgList" :key="item.id">
         <img class="carousel-img" :src="item.img" />
       </el-carousel-item>
     </el-carousel>
-    <el-carousel v-else :interval="4000" type="card" height="220px">
+    <el-carousel v-else :interval="4000" trigger="click" direction="vertical" height="300px">
       <el-carousel-item v-for="item in 3" :key="item">
         <h3 text="2xl" justify="center">暂无图片</h3>
       </el-carousel-item>
@@ -14,16 +20,28 @@
 </template>
 
 <script setup>
-import { computed, defineProps } from 'vue'
+import { useCarouselChartStore } from '@/stores/carouselChartStore'
+import { ref, onBeforeMount } from 'vue'
 
-const imgList = computed(() => props.imgList)
+const carouselChart = useCarouselChartStore()
 
-const props = defineProps({
-  imgList: Array
+const imgList = ref()
+
+onBeforeMount(() => {
+  carouselChart
+    .showCarouselChart()
+    .then((res) => {
+      if (res.data.length > 0) imgList.value = res.data
+    })
+    .catch((e) => {})
 })
 </script>
 
 <style scoped>
+.carousel-container {
+  margin-bottom: -40px;
+}
+
 .carousel-img {
   width: 100%;
   height: 100%;

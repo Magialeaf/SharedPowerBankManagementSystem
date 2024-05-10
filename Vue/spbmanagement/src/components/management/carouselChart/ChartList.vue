@@ -1,5 +1,5 @@
 <template>
-  <el-table :data="chartList" stripe border>
+  <el-table :data="chartList" stripe border @filter-change="handleFilter" @sort-change="handleSort">
     <el-table-column class="table-column" min-width="10%" prop="id" label="id" />
     <el-table-column class="table-column" min-width="15%" prop="title" label="标题" />
     <el-table-column class="table-column" min-width="15%" label="轮播图">
@@ -7,10 +7,28 @@
         <img :src="row.img" alt="用户头像" style="max-width: 48px; max-height: 48px" />
       </template>
     </el-table-column>
-    <el-table-column class="table-column" min-width="15%" prop="create_time" label="创建时间" />
-    <el-table-column class="table-column" min-width="15%" prop="update_time" label="修改时间" />
     <el-table-column
       class="table-column"
+      sortable="custom"
+      min-width="15%"
+      prop="create_time"
+      label="创建时间"
+    />
+    <el-table-column
+      class="table-column"
+      sortable="custom"
+      min-width="15%"
+      prop="update_time"
+      label="修改时间"
+    />
+    <el-table-column
+      class="table-column"
+      column-key="active"
+      :filters="[
+        { text: '启用', value: 1 },
+        { text: '禁用', value: 0 }
+      ]"
+      :filter-multiple="false"
       min-width="10%"
       prop="active"
       label="状态"
@@ -48,6 +66,21 @@ function showDetails(row) {
 
 function formatActiveStatus(row) {
   return row.active === 1 ? '启用' : '禁用'
+}
+
+const emits = defineEmits(['filter-active', 'sort-by'])
+
+function handleFilter(filters) {
+  emits('filter-active', filters.active[0])
+}
+
+function handleSort(value) {
+  const { prop, order } = value
+  if (order === 'ascending') {
+    emits('sort-by', `${prop}`)
+  } else {
+    emits('sort-by', `-${prop}`)
+  }
 }
 </script>
 

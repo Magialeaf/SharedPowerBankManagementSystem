@@ -12,7 +12,7 @@
     </div>
   </div>
   <div v-if="!ifAddNew" class="carousel-chart-list">
-    <ChartList :chartData="chartList" />
+    <ChartList :chartData="chartList" @filter-active="handleFilterActive" @sort-by="handleSortBy" />
     <div class="pagination">
       <Pagination :pageInfo="chartStore.getPageInfo()" @page-change="handlePageChange" />
     </div>
@@ -30,7 +30,9 @@ import { useCarouselChartStore } from '@/stores/carouselChartStore'
 const chartStore = useCarouselChartStore()
 const ifAddNew = ref(false)
 const searchKey = ref({
-  keyword: ''
+  keyword: '',
+  active: null,
+  order_by: []
 })
 
 const chartList = computed(() => chartStore.getList())
@@ -47,27 +49,26 @@ function initList() {
 function handleSearch(keyword) {
   searchKey.value.keyword = keyword
   chartStore
-    .getCarouselChartList(1, {
-      keyword: searchKey.value.keyword
-    })
-    .then()
-    .catch()
+    .getCarouselChartList(1, searchKey.value)
+    .then((res) => {})
+    .catch((e) => {})
 }
 
-function handlePageChange(page) {
-  if (searchKey.value) {
-    chartStore
-      .getCarouselChartList(page, {
-        keyword: searchKey.value.keyword
-      })
-      .then()
-      .catch()
-  } else {
-    chartStore
-      .getCarouselChartList(page)
-      .then((res) => {})
-      .catch((e) => {})
-  }
+function handlePageChange(page = chartStore.getPageInfo().currentPage) {
+  chartStore
+    .getCarouselChartList(page, searchKey.value)
+    .then((res) => {})
+    .catch((e) => {})
+}
+
+function handleFilterActive(value) {
+  searchKey.value.active = value
+  handlePageChange()
+}
+
+function handleSortBy(value) {
+  searchKey.value.order_by = [value]
+  handlePageChange()
 }
 </script>
 

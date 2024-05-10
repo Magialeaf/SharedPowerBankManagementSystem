@@ -27,7 +27,7 @@ const goHome = () => {
   margin-left: 5%;
   height: 100vh;
   text-align: center;
-  background: url('@/assets/img/home/404.png') no-repeat center center / cover;
+  background: url('@/assets/img/home/404.png') no-repeat center center;
 }
 
 .title {

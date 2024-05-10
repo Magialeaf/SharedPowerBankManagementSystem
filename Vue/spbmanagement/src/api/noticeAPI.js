@@ -1,5 +1,11 @@
-import { noticeURL } from '@/api/path'
-import { getByPkAPI, createByPkAPI, updateByPkAPI, deleteByPkAPI } from '@/api/APIBase'
+import { noticeURL, noticeImgURL } from '@/api/path'
+import {
+  getByPkAPI,
+  createByPkAPI,
+  updateByPkAPI,
+  deleteByPkAPI,
+  uploadImageAPI
+} from '@/api/APIBase'
 
 export const getNoticeAPI = (id) => getByPkAPI(noticeURL, id)
 
@@ -12,3 +18,5 @@ export const updateNoticeAPI = (id, conditions = {}, data = {}) =>
   updateByPkAPI(noticeURL, id, conditions, data)
 
 export const deleteNoticeAPI = (id) => deleteByPkAPI(noticeURL, id)
+
+export const uploadNoticeImgAPI = (fileData) => uploadImageAPI(noticeImgURL, fileData)

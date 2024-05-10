@@ -22,8 +22,14 @@ from spb_management.utils.my_exception import validation_exception
 
 
 class MerchantView(GetAndPostAPIView):
-    permission_classes = [MoreAndMaintainerPermission, ]
     throttle_classes = [MerchantThrottle, ]
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.method == "GET":
+            self.permission_classes = [NotAnonPermission, ]
+        else:
+            self.permission_classes = [MoreAndMaintainerPermission, ]
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, version, **kwargs):
         action = request.GET.get("action")
@@ -138,8 +144,29 @@ class MerchantView(GetAndPostAPIView):
             return response(ResponseCode.ERROR, "商户不存在", {})
 
 
-class MerchantImgThrottle(UploadImgAPI):
+""" —————————————————————————————— """
+""" |       MerchantImgView      | """
+""" —————————————————————————————— """
+
+class MerchantImgView(UploadImgAPI):
     throttle_classes = [MerchantThrottle, ]
 
     def __init__(self):
         super().__init__(ImgAPI.merchant_img_path)
+
+
+class HotMerchantView(GetAndPostAPIView):
+    throttle_classes = [MerchantThrottle, ]
+    permission_classes = [NotAnonPermission, ]
+
+    def get(self, request, version, **kwargs):
+        action = request.GET.get("action")
+        if action == "getList":
+             return self.get_hot_merchant()
+
+        return response(ResponseCode.ERROR, "请求参数错误", {})
+
+    def get_hot_merchant(self):
+        query = MerchantInfo.objects.all()[:6]
+        data = MerchantSerializer(query, many=True).data
+        return response(ResponseCode.SUCCESS, "获取热门商户成功", data)

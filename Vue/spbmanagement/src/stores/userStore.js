@@ -16,6 +16,7 @@ import {
 import { useAddressStore } from '@/stores/areaStore.js'
 import { createPageInfo } from '@/stores/pageInfo.js'
 import { useIdentityStore } from './authenticationStore'
+import { convertBackendTimestampToLocalTime } from '@/utils/convert'
 
 export const useUserStore = defineStore('userList', () => {
   const defaultAvatarURL = ref('http://127.0.0.1:8000/media/images/user_avatars/default.png')
@@ -48,7 +49,17 @@ export const useUserStore = defineStore('userList', () => {
   // 获得个人信息
   function getMyInfo() {
     return getMyInfoAPI()
-      .then((res) => res)
+      .then((res) => {
+        res.data[0].identity = res.data[0].identity.toString()
+        if (res.data[0].identity === '0') {
+          res.data[0].identity = '超级管理员'
+        }
+        res.data[0].create_time = convertBackendTimestampToLocalTime(res.data[0].create_time)
+        res.data[0].last_login_time = convertBackendTimestampToLocalTime(
+          res.data[0].last_login_time
+        )
+        return res
+      })
       .catch((error) => {
         throw error
       })
@@ -71,7 +82,17 @@ export const useUserStore = defineStore('userList', () => {
   // 获取单个用户和账户信息
   function getOneInfo(id) {
     return getOneInfoAPI(id)
-      .then((res) => res)
+      .then((res) => {
+        res.data[0].identity = res.data[0].identity.toString()
+        if (res.data[0].identity === '0') {
+          res.data[0].identity = '超级管理员'
+        }
+        res.data[0].create_time = convertBackendTimestampToLocalTime(res.data[0].create_time)
+        res.data[0].last_login_time = convertBackendTimestampToLocalTime(
+          res.data[0].last_login_time
+        )
+        return res
+      })
       .catch((error) => {
         throw error
       })

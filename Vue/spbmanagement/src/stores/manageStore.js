@@ -1,15 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref, markRaw, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useJwtTokenStore } from './authenticationStore'
+import { useJwtTokenStore, useIdentityStore } from './authenticationStore'
 import { useChangeThemeColorStore } from '@/stores/themeColor.js'
 import { icons } from '@/components/icons/iconsLoader'
 
 export const useManageMainStore = defineStore('manageMainStore', () => {
   const jwtTokenStore = useJwtTokenStore()
-  const identity = computed(() => {
-    return jwtTokenStore.identity
-  })
+  const identityStore = useIdentityStore()
+  const identityCode = computed(() => jwtTokenStore.getIdentityCode())
 
   const items = ref([
     {
@@ -168,8 +167,25 @@ export const useManageMainStore = defineStore('manageMainStore', () => {
     }
   ])
 
+  const filteredItems = computed(() => {
+    switch (identityCode.value) {
+      case identityStore.SuperAdmin:
+        return items.value
+      case identityStore.Admin:
+        return items.value
+      case identityStore.User:
+        return items.value.filter((item) => item.id === '1' || item.id === '2' || item.id === '7')
+      case identityStore.Maintainer:
+        return items.value.filter(
+          (item) => item.id === '1' || item.id === '2' || item.id === '6' || item.id === '7'
+        )
+      default:
+        return []
+    }
+  })
+
   const getItems = () => {
-    return items
+    return filteredItems
   }
 
   return { getItems }

@@ -5,7 +5,7 @@
           ifAddNewSPB ? '归还列表' : '新增归还记录'
         }}</el-button> -->
     </div>
-    <div v-if="!ifAddNewSPB" class="right-operation">
+    <div v-if="!ifAddNewSPB && ifUpIdentity" class="right-operation">
       <div class="search-SPB">
         <el-select v-model="searchKey.power_bank" @change="handleSearch" placeholder="搜索充电宝">
           <el-option
@@ -28,7 +28,12 @@
     </div>
   </div>
   <div v-if="!ifAddNewSPB" class="SPB-list">
-    <OrderList :orderFeeData="orderFeeList" />
+    <OrderList
+      :orderFeeData="orderFeeList"
+      :ifUpIdentity="ifUpIdentity"
+      @filter-paid="handleFilterPaid"
+      @sort-by="handleSortBy"
+    />
     <div class="pagination">
       <Pagination :pageInfo="orderFeeStore.getPageInfo()" @page-change="handlePageChange" />
     </div>
@@ -40,16 +45,20 @@
 import { ref, onBeforeMount, computed } from 'vue'
 import { useOrderFeeStore } from '@/stores/orderStore.js'
 import { useUserNameStore, usePowerBankNameStore } from '@/stores/nameList.js'
+import { useJwtTokenStore, useIdentityStore } from '@/stores/authenticationStore'
 import { lockFunction } from '@/utils/myLock'
 import Pagination from '@/components/management/utils/Pagination.vue'
 import OrderList from '@/components/management/orderFee/OrderFeeList.vue'
 import OrderOperation from '@/components/management/orderFee/OrderFeeOperation.vue'
 
 const ifAddNewSPB = ref(false)
+const ifUpIdentity = ref(false)
 
 const searchKey = ref({
   power_bank: '',
-  user: ''
+  user: '',
+  paid: null,
+  order_by: []
 })
 
 const orderFeeStore = useOrderFeeStore()
@@ -63,19 +72,29 @@ onBeforeMount(() => initList())
 const powerBankList = computed(() => powerBankNameStore.showList())
 const userList = computed(() => userNameStore.showList())
 
+const jwtTokenStore = useJwtTokenStore()
+const identityStore = useIdentityStore()
+
 function initList() {
+  const identityCode = jwtTokenStore.getIdentityCode()
+  if (identityCode === identityStore.Admin || identityCode === identityStore.SuperAdmin) {
+    ifUpIdentity.value = true
+  }
+
   orderFeeStore
     .initList()
     .then((res) => {})
     .catch((e) => {})
-  powerBankNameStore
-    .initList()
-    .then((res) => {})
-    .catch((e) => {})
-  userNameStore
-    .initList()
-    .then((res) => {})
-    .catch((e) => {})
+  if (ifUpIdentity.value) {
+    powerBankNameStore
+      .initList()
+      .then((res) => {})
+      .catch((e) => {})
+    userNameStore
+      .initList()
+      .then((res) => {})
+      .catch((e) => {})
+  }
 }
 
 function switchAddNewSPB() {
@@ -103,14 +122,24 @@ function clearSearch() {
   Object.keys(searchKey.value).forEach((key) => {
     searchKey.value[key] = ''
   })
+  handleSearch(1)
+}
+
+function handleSearch(page = orderFeeStore.getPageInfo().currentPage) {
+  orderFeeStore
+    .getList(page, searchKey.value)
+    .then((res) => {})
+    .catch((e) => {})
+}
+
+function handleFilterPaid(value) {
+  searchKey.value.paid = value
   handleSearch()
 }
 
-function handleSearch() {
-  orderFeeStore
-    .getList(1, searchKey.value)
-    .then((res) => {})
-    .catch((e) => {})
+function handleSortBy(value) {
+  searchKey.value.order_by = [value]
+  handleSearch()
 }
 </script>
 

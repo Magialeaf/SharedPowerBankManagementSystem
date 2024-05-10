@@ -76,7 +76,9 @@ export const useTemplateStore = defineStore('TemplateList', () => {
   }
 
   function extraOperation(data) {
-    data.forEach((item) => {})
+    if (data && data.length) {
+      data.forEach((item) => {})
+    }
     return data
   }
 

@@ -31,7 +31,7 @@ drf_port = "8000"
 drf_url = f"http://{drf_ip}:{drf_port}"
 
 
-ALLOWED_HOSTS = [drf_ip]
+ALLOWED_HOSTS = [drf_ip, "39.101.75.20"]
 
 
 # Application definition
@@ -212,6 +212,33 @@ CACHES = {
         "BACKEND": "django_redis.cache.RedisCache",
         # 网址，可以是多个
         "LOCATION": f"redis://{drf_ip}:{redis_port}/4",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {"max_connections": 100}
+        }
+    },
+    "order_serial_number": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        # 网址，可以是多个
+        "LOCATION": f"redis://{drf_ip}:{redis_port}/5",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {"max_connections": 100}
+        }
+    },
+    "celery_broker_url": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        # 网址，可以是多个
+        "LOCATION": f"redis://{drf_ip}:{redis_port}/14",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {"max_connections": 100}
+        }
+    },
+    "celery_result_url": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        # 网址，可以是多个
+        "LOCATION": f"redis://{drf_ip}:{redis_port}/15",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "CONNECTION_POOL_KWARGS": {"max_connections": 100}

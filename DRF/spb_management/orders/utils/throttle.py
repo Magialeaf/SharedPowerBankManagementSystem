@@ -14,3 +14,8 @@ class PowerBankReturnThrottle(AuthThrottle):
 class PowerBankFeeThrottle(AuthThrottle):
     scope = "power_bank_fee"
     THROTTLE_RATES = {scope: "30/m"}
+
+
+class UserOrderOperationThrottle(AuthThrottle):
+    scope = "user_order_operation"
+    THROTTLE_RATES = {scope: "30/m"}

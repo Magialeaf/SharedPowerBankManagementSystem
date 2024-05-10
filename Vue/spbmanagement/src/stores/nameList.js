@@ -44,12 +44,21 @@ export const usePowerBankNameStore = defineStore('powerBankNameList', () => {
     return powerBankNameList.value
   }
 
+  function getList(conditions) {
+    return getPowerBankNameListAPI(conditions)
+      .then((res) => {
+        powerBankNameList.value = res.data
+        return res
+      })
+      .catch(handleApiError)
+  }
+
   const handleApiError = (error) => {
     $errorMsg(error.message)
     throw error
   }
 
-  return { showList, initList }
+  return { showList, getList, initList }
 })
 
 // 获取用户名字列表

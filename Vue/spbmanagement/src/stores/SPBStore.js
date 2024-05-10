@@ -90,7 +90,15 @@ export const useSPBStore = defineStore('SPBList', () => {
 
   async function getInfo(id) {
     return getPowerBankAPI(id)
-      .then((res) => res)
+      .then((res) => {
+        res.data.areaCodeList = [
+          res.data.area_data.slice(0, 2),
+          res.data.area_data.slice(0, 4),
+          res.data.area_data.slice(0, 6)
+        ]
+        res.data.status_name = powerBankConfig.getStatusDisplay(res.data.status)
+        return res
+      })
       .catch(handleApiError)
   }
 
@@ -133,24 +141,26 @@ export const useSPBStore = defineStore('SPBList', () => {
   }
 
   function extraOperation(data) {
-    data.forEach((item) => {
-      item.status = powerBankConfig.getStatusDisplay(item.status)
-      let address
-      if (item.area_code) {
-        const addressList = addressStore.codeListToAddrList([
-          item.area_code.slice(0, 2),
-          item.area_code.slice(0, 4),
-          item.area_code.slice(0, 6)
-        ])
-        address = addressList.reduce((pre, cur) => pre + cur)
-      } else {
-        address = null
-      }
-      item.areaName = address
-      if (item.area_name) item.areaName += item.area_name
-      if (item.merchant_address) item.areaName += item.merchant_address
-      item.merchantName = item.merchant_name
-    })
+    if (data && data.length) {
+      data.forEach((item) => {
+        item.status_name = powerBankConfig.getStatusDisplay(item.status)
+        let address
+        if (item.area_code) {
+          const addressList = addressStore.codeListToAddrList([
+            item.area_code.slice(0, 2),
+            item.area_code.slice(0, 4),
+            item.area_code.slice(0, 6)
+          ])
+          address = addressList.reduce((pre, cur) => pre + cur)
+        } else {
+          address = null
+        }
+        item.areaName = address
+        if (item.area_name) item.areaName += item.area_name
+        if (item.merchant_address) item.areaName += item.merchant_address
+        item.merchantName = item.merchant_name
+      })
+    }
   }
 
   const handleApiSuccess = (res, ifRefresh = false) => {
@@ -246,11 +256,13 @@ export const useSPBMaintenanceStore = defineStore('SPBMaintenanceList', () => {
   }
 
   function extraOperation(data) {
-    data.forEach((item) => {
-      item.status = powerBankConfig.getStatusDisplay(item.status)
-      item.date = convertBackendTimestampToLocalTime(item.date)
-      item.finished = item.finished ? '是' : '否'
-    })
+    if (data && data.length) {
+      data.forEach((item) => {
+        item.status = powerBankConfig.getStatusDisplay(item.status)
+        item.date = convertBackendTimestampToLocalTime(item.date)
+        item.finished = item.finished ? '是' : '否'
+      })
+    }
     return data
   }
 

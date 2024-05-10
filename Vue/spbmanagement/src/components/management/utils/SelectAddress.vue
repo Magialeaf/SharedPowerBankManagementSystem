@@ -1,5 +1,5 @@
 <template>
-  <SelectArea v-model:codeList="codeList" @areaSelected="handleSelect" />
+  <SelectArea :tip="tip" v-model:codeList="codeList" @areaSelected="handleSelect" />
   <el-select v-model="selectArea" placeholder="具体区域" style="width: 218px; margin-left: 42px">
     <el-option v-for="item in areaOptions" :key="item.id" :label="item.name" :value="item.id" />
   </el-select>
@@ -18,7 +18,8 @@ const props = defineProps({
   codeList: {
     type: Array
   },
-  areaOption: {}
+  areaOption: {},
+  tip: { default: null }
 })
 
 const codeList = computed(() => props.codeList)
@@ -61,6 +62,7 @@ onBeforeMount(() => {
     .getAreaNameList(codeList.value[2], false)
     .then((res) => {
       areaOptions.value = res.data
+      selectArea.value = tempSelectArea.value
     })
     .catch((e) => {})
 })

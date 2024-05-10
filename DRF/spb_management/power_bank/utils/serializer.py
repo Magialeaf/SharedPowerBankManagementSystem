@@ -1,9 +1,10 @@
 from decimal import Decimal
 
+from django.db import transaction
 from rest_framework import serializers
-
+from my_celery.orders.tasks import charge_power_bank
 from merchants.models import MerchantInfo
-from power_bank.models import PowerBankInfo, PowerBankMaintenanceInfo
+from power_bank.models import PowerBankInfo, PowerBankMaintenanceInfo, StatusDescription
 from spb_management.router.image_operation import ImgAPI
 from users.models import UserInfo, AccountInfo
 
@@ -33,10 +34,15 @@ class PowerBankSerializer(serializers.ModelSerializer):
         return PowerBankInfo.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
+        status = validated_data.get('status', None)
+        if status == StatusDescription.charging:
+            instance.status = status
+            charge_power_bank.delay(instance.id)
+        else:
+            instance.status = validated_data.get('status', instance.status)
+
         instance.name = validated_data.get('name', instance.name)
         instance.img = validated_data.get('img', instance.img)
-        instance.status = validated_data.get('status', instance.status)
-
         instance.area = validated_data.get('area', instance.area)
         try:
             query = set(MerchantInfo.objects.filter(area=instance.area.id).values_list("id", flat=True))
@@ -57,8 +63,9 @@ class PowerBankSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         img = instance.img
         structured_data = super().to_representation(instance)
-        structured_data['area_code'] = instance.area.code if instance.area else None
-        structured_data['area_name'] = instance.area.name if instance.area else None
+        structured_data['area_code'] = instance.area.code if instance.area else ''
+        structured_data['area_name'] = instance.area.name if instance.area else ''
+        structured_data['area_data'] = structured_data['area_code'] + "|" + structured_data['area_name']
         structured_data['merchant_address'] = instance.merchant.address if instance.merchant else None
         structured_data['merchant_name'] = instance.merchant.shop_name if instance.merchant else None
         structured_data['img'] = ImgAPI.get_power_bank_img(img)

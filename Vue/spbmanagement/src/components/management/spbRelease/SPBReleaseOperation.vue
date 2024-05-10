@@ -167,14 +167,14 @@ function afterUploadImgSuccess(value) {
     spbStore
       .createInfo(inputData)
       .then((res) => {
-        console.log(res)
+        //console.log(res)
       })
       .catch((err) => {})
   } else {
     spbStore
       .updateInfo(props.id, inputData)
       .then((res) => {
-        console.log(res)
+        //console.log(res)
       })
       .catch((err) => {})
   }

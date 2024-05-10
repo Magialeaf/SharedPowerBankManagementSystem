@@ -1,9 +1,21 @@
 <template>
-  <el-table :data="userList" stripe border>
+  <el-table :data="userList" stripe border @filter-change="filterChange">
     <el-table-column class="table-column" min-width="5%" prop="id" label="uid" />
     <el-table-column class="table-column" min-width="15%" prop="username" label="用户名" />
-    <el-table-column class="table-column" min-width="5%" prop="sex" label="性别" />
-    <el-table-column class="table-column" min-width="10%" label="头像">
+    <el-table-column
+      class="table-column"
+      :filters="[
+        { text: '男', value: '0' },
+        { text: '女', value: '1' },
+        { text: '保密', value: '2' }
+      ]"
+      :filter-multiple="false"
+      column-key="sex"
+      min-width="8%"
+      prop="sex"
+      label="性别"
+    />
+    <el-table-column class="table-column" min-width="7%" label="头像">
       <template #default="{ row }">
         <img :src="row.avatar" alt="用户头像" style="max-width: 48px; max-height: 48px" />
       </template>
@@ -35,7 +47,7 @@
 import { $confirmDeleteMsg, $errorMsg } from '@/utils/msg'
 import { useIdentityStore } from '@/stores/authenticationStore'
 import { useUserStore } from '@/stores/userStore'
-import { ref, computed } from 'vue'
+import { ref, computed, defineProps, defineEmits } from 'vue'
 import OneUserInfo from '@/components/management/user/OneUserInfo.vue'
 
 const userList = computed(() => props.userData)
@@ -67,6 +79,12 @@ function deleteRow(row) {
     .catch((e) => {
       $errorMsg('取消删除')
     })
+}
+
+const emits = defineEmits(['filter-sex'])
+
+function filterChange(filters) {
+  emits('filter-sex', filters.sex[0])
 }
 </script>
 

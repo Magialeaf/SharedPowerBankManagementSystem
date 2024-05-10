@@ -7,7 +7,7 @@ from areas.utils.throttle import AreaThrottle
 from areas.utils.redis_operation import AreaDataRedis
 from spb_management.base_class.GetAndPostAPIView import GetAndPostAPIView
 from spb_management.router import Internet
-from spb_management.router.permission import MoreAndMaintainerPermission
+from spb_management.router.permission import MoreAndMaintainerPermission, NotAnonPermission, MoreAndAdminPermission
 from spb_management.router.response_data import response, ResponseCode
 from spb_management.utils.my_exception import validation_exception
 
@@ -24,8 +24,14 @@ from spb_management.utils.my_exception import validation_exception
 
 
 class AreaView(GetAndPostAPIView):
-    permission_classes = [MoreAndMaintainerPermission, ]
     throttle_classes = [AreaThrottle, ]
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.method == "GET":
+            self.permission_classes = [NotAnonPermission, ]
+        else:
+            self.permission_classes = [MoreAndAdminPermission, ]
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, version, **kwargs):
         action = request.GET.get("action")

@@ -50,7 +50,7 @@
     </el-form-item>
     <el-form-item>
       <el-button v-if="!hadPaid" type="success" @click="onSubmit">{{
-        ifNew ? '新增租赁记录' : '更新租赁记录'
+        ifNew ? '新增缴费记录' : '更新缴费记录'
       }}</el-button>
     </el-form-item>
   </el-form>

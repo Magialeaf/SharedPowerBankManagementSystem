@@ -43,23 +43,27 @@ urlpatterns = [
 
     # merchants app
     path('<str:version>/merchant/<int:pk>/', merchants_api.MerchantView.as_view(), name='merchant_detail'),
-    path('<str:version>/merchant/img/', merchants_api.MerchantImgThrottle.as_view(), name='merchant_img_detail'),
+    path('<str:version>/merchant/img/', merchants_api.MerchantImgView.as_view(), name='merchant_img_detail'),
+    path('<str:version>/hot-merchant/', merchants_api.HotMerchantView.as_view(), name='hot_merchant_detail'),
 
     # power_bank app
     path('<str:version>/power-bank/<int:pk>/', power_bank_api.PowerBankView.as_view(), name='power_bank_detail'),
     path('<str:version>/power-bank/img/', power_bank_api.PowerBankImgView.as_view(), name='power_bank_img_detail'),
     path('<str:version>/power-bank/maintenance/<int:pk>/', power_bank_api.PowerBankMaintenanceView.as_view(), name='power_bank_maintenance_detail'),
+    path('<str:version>/hot-power-bank/', power_bank_api.HotPowerBankView.as_view(), name='hot_power_bank_detail'),
 
     # orders app
     path('<str:version>/power-bank-fee/<int:pk>/', orders_api.PowerBankFeeView.as_view(), name='power_bank_fee_detail'),
     path('<str:version>/power-bank-rental/<int:pk>/', orders_api.PowerBankRentalView.as_view(), name='power_bank_rental_detail'),
     path('<str:version>/power-bank-return/<int:pk>/', orders_api.PowerBankReturnView.as_view(), name="power_bank_return_detail"),
+    path('<str:version>/user-order-operation/<int:pk>/', orders_api.UserOrderOperationView.as_view(), name='user_order_operation_detail'),
 
 
     # system_administration app
     path('<str:version>/system-administration/carousel-chart/<int:pk>/', system_administration_api.CarouselChartView.as_view(), name='carousel_chart_detail'),
     path('<str:version>/system-administration/carousel-chart/img/', system_administration_api.CarouselChartImgView.as_view(), name='carousel_chart_img_detail'),
     path('<str:version>/system-administration/notice/<int:pk>/', system_administration_api.NoticeView.as_view(), name="notice_detail"),
+    path('<str:version>/system-administration/notice/img/', system_administration_api.NoticeImgView.as_view(), name='notice_img_detail'),
 ]
 
 # 主路由中：显性告诉django绑定media_url和media_root

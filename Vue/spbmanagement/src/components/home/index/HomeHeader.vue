@@ -5,22 +5,32 @@
         <a class="navbar-item-a navbar-title" href="/">{{ studioStore.studioName }}</a>
       </li>
       <li :class="{ active: $route.path === '/home' }" class="navbar-item">
-        <a class="navbar-item-a navbar-page" href="/home">首页</a>
+        <router-link :to="{ path: '/home' }" class="navbar-item-a navbar-page">首页</router-link>
       </li>
-      <li :class="{ active: $route.path === '/partner' }" class="navbar-item">
-        <a class="navbar-item-a navbar-page" href="/partner">合作商户</a>
+      <li :class="{ active: $route.path.startsWith('/partner') }" class="navbar-item">
+        <router-link :to="{ path: '/partner' }" class="navbar-item-a navbar-page"
+          >合作商户</router-link
+        >
       </li>
-      <li :class="{ active: $route.path === '/product' }" class="navbar-item">
-        <a class="navbar-item-a navbar-page" href="/product">充电宝投放</a>
+      <li :class="{ active: $route.path.startsWith('/product') }" class="navbar-item">
+        <router-link :to="{ path: '/product' }" class="navbar-item-a navbar-page"
+          >充电宝投放</router-link
+        >
       </li>
-      <li :class="{ active: $route.path === '/notice' }" class="navbar-item">
-        <a class="navbar-item-a navbar-page" href="/notice">公告栏</a>
+      <li :class="{ active: $route.path.startsWith('/notice') }" class="navbar-item">
+        <router-link :to="{ path: '/notice' }" class="navbar-item-a navbar-page"
+          >公告栏</router-link
+        >
       </li>
-      <li :class="{ active: $route.path === '/user' }" class="navbar-item">
-        <a class="navbar-item-a navbar-page" href="/user">个人中心</a>
+      <li :class="{ active: $route.path.startsWith('/user') }" class="navbar-item">
+        <router-link :to="{ path: '/user' }" class="navbar-item-a navbar-page"
+          >个人中心</router-link
+        >
       </li>
       <li :class="{ active: $route.path === '/management' }" class="navbar-item">
-        <a class="navbar-item-a navbar-page" href="/management">后台管理</a>
+        <router-link :to="{ path: '/management' }" class="navbar-item-a navbar-page"
+          >后台管理</router-link
+        >
       </li>
     </ul>
   </nav>
@@ -33,7 +43,7 @@ const studioStore = useStudioStore()
 
 <style scoped>
 .navbar {
-  height: 60%;
+  height: 100%;
   width: 100%;
 }
 

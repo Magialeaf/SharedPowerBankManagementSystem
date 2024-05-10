@@ -1,11 +1,14 @@
-import { powerBankURL, powerBankImgURL, powerBankMaintenanceURL } from '@/api/path.js'
+import {
+  powerBankURL,
+  powerBankImgURL,
+  powerBankMaintenanceURL,
+  hotPowerBankURL
+} from '@/api/path.js'
 import {
   getAPI,
   getByPkAPI,
   updateByPkAPI,
   deleteByPkAPI,
-  deleteAPI,
-  updateAPI,
   createByPkAPI,
   uploadImageAPI
 } from '@/api/APIBase.js'
@@ -20,7 +23,8 @@ export const getPowerBankListAPI = (page, conditions) =>
   getByPkAPI(powerBankURL, page, conditions, [], 'getList')
 
 // 获得全部充电宝id和name
-export const getPowerBankNameListAPI = () => getByPkAPI(powerBankURL, 0, {}, [], 'getNameList')
+export const getPowerBankNameListAPI = (conditions) =>
+  getByPkAPI(powerBankURL, 0, conditions, [], 'getNameList')
 
 // 新增充电宝
 export const createPowerBankAPI = (data = {}) => createByPkAPI(powerBankURL, 0, data)
@@ -54,3 +58,7 @@ export const updatePowerBankMaintenanceAPI = (id, conditions = {}, data = {}) =>
 
 // 删除充电宝维护记录
 export const deletePowerBankMaintenanceAPI = (id) => deleteByPkAPI(powerBankMaintenanceURL, id)
+
+/* 热门充电宝 */
+export const getHotPowerBankListAPI = (conditions) =>
+  getAPI(hotPowerBankURL, conditions, [], 'getList')

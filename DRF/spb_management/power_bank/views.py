@@ -10,7 +10,7 @@ from spb_management.base_class.GetAndPostAPIView import GetAndPostAPIView
 from spb_management.base_class.UploadImgAPI import UploadImgAPI
 from spb_management.router import Internet
 from spb_management.router.image_operation import ImgAPI
-from spb_management.router.permission import MoreAndMaintainerPermission, MoreAndAdminPermission
+from spb_management.router.permission import MoreAndMaintainerPermission, MoreAndAdminPermission, NotAnonPermission
 from spb_management.router.response_data import response, ResponseCode
 from spb_management.utils.my_exception import validation_exception
 from spb_management.utils.page_operation import set_extra_page
@@ -30,13 +30,19 @@ from spb_management.utils.page_operation import set_extra_page
 
 
 class PowerBankView(CRUDInterface):
-    permission_classes = [MoreAndAdminPermission,]
     throttle_classes = [PowerBankThrottle, ]
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.method == "GET":
+            self.permission_classes = [NotAnonPermission, ]
+        else:
+            self.permission_classes = [MoreAndMaintainerPermission, ]
+        return super().dispatch(request, *args, **kwargs)
 
     def extra_get(self, request, version, kwargs):
         action = request.GET.get("action", None)
         if action == "getNameList":
-            return self.get_name_list()
+            return self.get_name_list(request, version, kwargs)
 
         raise UnknownActionError()
 
@@ -60,16 +66,21 @@ class PowerBankView(CRUDInterface):
         start_index = (page - 1) * items_per_page
 
         if conditions:
-            keyword = conditions.get("keyword", None)
-            keycode = conditions.get("keyAreaId", None)
             base_query = Q()
-            if keyword:
+            if keyword := conditions.get("keyword", None):
                 match_fields = ['name', 'merchant__shop_name']
                 for field in match_fields:
                     base_query |= Q(**{f'{field}__icontains': keyword})
-            if keycode:
+            if keycode := conditions.get("keyAreaId", None):
                 base_query &= Q(area=keycode)
-            query = PowerBankInfo.objects.filter(base_query).all()[start_index:start_index + items_per_page]
+
+            if status := conditions.get("status", None):
+                base_query &= Q(status=status)
+
+            if not (order_by := conditions.get("order_by", None)):
+                order_by = []
+
+            query = PowerBankInfo.objects.filter(base_query).all().order_by(*order_by)[start_index:start_index + items_per_page]
             total = PowerBankInfo.objects.filter(base_query).count()
         else:
             query = PowerBankInfo.objects.all()[start_index:start_index + items_per_page]
@@ -80,9 +91,13 @@ class PowerBankView(CRUDInterface):
 
         return response(ResponseCode.SUCCESS, "获取成功", data, extra=extra)
 
+    def get_name_list(self, request, version, kwargs):
+        conditions, data = Internet.get_internet_data(request)
 
-    def get_name_list(self):
-        query = PowerBankInfo.objects.values('id','name')
+        if merchant := conditions.get("merchant", None):
+            query = PowerBankInfo.objects.filter(merchant=merchant).values('id','name')
+        else:
+            query = PowerBankInfo.objects.values('id','name')
         data = [{'id': item['id'], 'name': item['name']} for item in query]
 
         return response(ResponseCode.SUCCESS, "获取成功", data)
@@ -165,15 +180,22 @@ class PowerBankMaintenanceView(CRUDInterface):
 
         if conditions:
             base_query = Q()
-            power_bank = conditions.get("power_bank", None)
-            if power_bank:
+            if power_bank := conditions.get("power_bank", None):
                 base_query &= Q(power_bank=power_bank)
-                
-            maintainer_account = conditions.get("maintainer_account", None)
-            if maintainer_account:
+
+            if maintainer_account := conditions.get("maintainer_account", None):
                 base_query &= Q(maintainer_account=maintainer_account)
 
-            query = PowerBankMaintenanceInfo.objects.filter(base_query).all()[start_index:start_index + items_per_page]
+            if status := conditions.get("status", None):
+                base_query &= Q(status=status)
+
+            if finished := conditions.get("finished", None):
+                base_query &= Q(finished=finished)
+
+            if not (order_by := conditions.get("order_by", None)):
+                order_by = []
+
+            query = PowerBankMaintenanceInfo.objects.filter(base_query).all().order_by(*order_by)[start_index:start_index + items_per_page]
             total = PowerBankMaintenanceInfo.objects.filter(base_query).count()
         else:
             query = PowerBankMaintenanceInfo.objects.all()[start_index:start_index + items_per_page]
@@ -219,3 +241,25 @@ class PowerBankMaintenanceView(CRUDInterface):
             return response(ResponseCode.SUCCESS, "删除成功", {})
         except PowerBankMaintenanceInfo.DoesNotExist:
             return response(ResponseCode.ERROR, "充电宝不存在", {})
+
+
+""" —————————————————————————————— """
+""" |      HotPowerBankView      | """
+""" —————————————————————————————— """
+
+
+class HotPowerBankView(GetAndPostAPIView):
+    throttle_classes = [PowerBankThrottle, ]
+    permission_classes = [NotAnonPermission, ]
+
+    def get(self, request, version, **kwargs):
+        action = request.GET.get("action")
+        if action == "getList":
+             return self.get_hot_power_bank()
+
+        return response(ResponseCode.ERROR, "请求参数错误", {})
+
+    def get_hot_power_bank(self):
+        query = PowerBankInfo.objects.all()[:6]
+        data = PowerBankSerializer(query, many=True).data
+        return response(ResponseCode.SUCCESS, "获取热门商户成功", data)

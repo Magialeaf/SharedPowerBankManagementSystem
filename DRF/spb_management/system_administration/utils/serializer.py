@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from spb_management.router.image_operation import ImgAPI
 from system_administration.models import CarouselChartInfo, NoticeInfo
+from users.models import AccountInfo, UserInfo
 
 
 # class CarouselChart(models.Model):
@@ -66,17 +67,11 @@ class CarouselChartImgSerializer(serializers.Serializer):
         return res
 
 
-# class NoticeInfo(models.Model):
-#     id = models.AutoField(verbose_name="id", primary_key=True)
-#     title = models.CharField(verbose_name="标题", max_length=20)
-#     content = models.CharField(verbose_name="内容", max_length=100)
-#     type = models.SmallIntegerField(verbose_name="类型", choices=((0, "管理员公告"), (1, "维护人员公告"), (2, "全体公告")))
-#     create_time = models.DateTimeField(verbose_name="创建时间", auto_now_add=True)
-#     update_time = models.DateTimeField(verbose_name="更新时间", auto_now=True)
-
 class NoticeSerializer(serializers.ModelSerializer):
     title = serializers.CharField(max_length=20, error_messages={'null': "标题不能为空", "max_length": "标题长度不能超过20个字符"})
     content = serializers.CharField(max_length=100, error_messages={'null': "内容不能为空", "max_length": "内容长度不能超过100个字符"})
+    uid = serializers.PrimaryKeyRelatedField(queryset=UserInfo.objects.all(), error_messages={'null': "发布者不能为空"})
+    img = serializers.CharField(max_length=64, allow_null=True, default='default.png', error_messages={"max_length": "图片地址长度不能超过64个字符"})
     type = serializers.IntegerField(error_messages={'null': "类型不能为空"})
 
     class Meta:
@@ -95,7 +90,10 @@ class NoticeSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance):
+        img = instance.img
         res = super().to_representation(instance)
+        res['uid_name'] = instance.uid.username
+        res['img'] = ImgAPI.get_notice_img(img)
         return res
 
 

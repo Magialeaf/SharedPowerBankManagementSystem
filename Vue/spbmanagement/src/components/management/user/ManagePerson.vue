@@ -19,7 +19,11 @@
     </div>
   </div>
   <div v-if="!ifAddNew" class="user-list">
-    <UserList :userData="userList" :identityCode="props.identityCode" />
+    <UserList
+      :userData="userList"
+      :identityCode="props.identityCode"
+      @filter-sex="handleFilterSex"
+    />
     <div class="pagination">
       <Pagination :pageInfo="userStore.getPageInfo()" @page-change="handlePageChange" />
     </div>
@@ -50,7 +54,8 @@ const currentPage = ref(1)
 const ifAddNew = ref(false)
 const searchKey = ref({
   keyword: '',
-  areaId: null
+  areaId: null,
+  sex: null
 })
 const tip = ref({
   listTip: '',
@@ -83,29 +88,29 @@ function initList() {
 function handleSearch(keyword) {
   searchKey.value.keyword = keyword
   userStore
-    .getUserList(1, {
-      keyword: searchKey.value.keyword
-    })
-    .then()
-    .catch()
+    .getUserList(1, searchKey.value)
+    .then((res) => {})
+    .catch((e) => {})
 }
 
 function handlePageChange(page) {
   currentPage.value = page
   if (searchKey.value) {
     userStore
-      .getUserList(page, {
-        keyword: searchKey.value.keyword,
-        areaId: searchKey.value.areaId
-      })
-      .then()
-      .catch()
+      .getUserList(page, searchKey.value)
+      .then((res) => {})
+      .catch((e) => {})
   } else {
     userStore
       .getUserList(page)
       .then((res) => {})
       .catch((e) => {})
   }
+}
+
+function handleFilterSex(value) {
+  searchKey.value.sex = value
+  handlePageChange(1)
 }
 
 function handleSelectArea(id) {
