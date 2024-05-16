@@ -41,7 +41,8 @@ export const getUserListAPI = (page, conditions) =>
 export const getUserNameListAPI = () => getByPkAPI(userURL, 0, {}, [], 'getNameList')
 
 // 获得维护人员名字
-export const getMaintainNameListAPI = () => getByPkAPI(userURL, 0, {}, [], 'getMaintainNameList')
+export const getMaintainNameListAPI = (conditions) =>
+  getByPkAPI(userURL, 0, conditions, [], 'getMaintainNameList')
 
 // 上传头像
 export const uploadAvatarAPI = (fileData) => uploadImageAPI(userAvatarURL, fileData)

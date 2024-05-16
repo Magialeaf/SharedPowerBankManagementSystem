@@ -97,7 +97,7 @@
     </div>
     <div v-else>
       <el-form-item v-if="accountInfo.id" label="身份">
-        <el-input v-model="accountInfo.identity" disabled></el-input>
+        <el-input :value="identityStore.getIdentity(accountInfo.identity)" disabled></el-input>
       </el-form-item>
     </div>
   </el-form>

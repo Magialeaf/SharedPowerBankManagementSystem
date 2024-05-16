@@ -8,8 +8,11 @@
       <hr />
     </div>
     <div class="operation">
+      <div class="search-box">
+        <div class="search">搜索：<Search @search="handleSearch" searchTip="搜素充电宝名" /></div>
+      </div>
       <div class="Record-box">
-        <UseRecord :data="orderData" />
+        <UseRecord :data="orderData" @sort-data="handleSortData" />
       </div>
       <div class="pagination">
         <Pagination
@@ -25,7 +28,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeMount, nextTick } from 'vue'
+import { ref, computed, onBeforeMount, nextTick } from 'vue'
 import { useOrderUserStore } from '@/stores/orderStore'
 import UseRecord from '@/components/home/user/UseRecord.vue'
 import SubContent from '@/components/home/utils/SubContent.vue'
@@ -36,6 +39,10 @@ const props = defineProps({
 
 const data = computed(() => props.data)
 const orderData = computed(() => orderStore.showList())
+const searchKey = ref({
+  keyword: null,
+  order_by: []
+})
 
 const tips = {
   uid: 'uid',
@@ -62,9 +69,25 @@ function handlePageChange(page) {
     .getList(page)
     .then((res) => {
       nextTick(() => {
-        window.scrollTo({ top: 500, behavior: 'smooth' }) // 执行平滑滚动
+        window.scrollTo({ top: 450, behavior: 'smooth' }) // 执行平滑滚动
       })
     })
+    .catch((e) => {})
+}
+
+function handleSearch(value) {
+  searchKey.value.keyword = value
+  orderStore
+    .getList(1, searchKey.value)
+    .then((res) => {})
+    .catch((e) => {})
+}
+
+function handleSortData(value) {
+  searchKey.value.order_by = [value]
+  orderStore
+    .getList(1, searchKey.value)
+    .then((res) => {})
     .catch((e) => {})
 }
 </script>
@@ -95,5 +118,21 @@ function handlePageChange(page) {
   justify-content: center;
   margin-top: 20px;
   margin-bottom: 10px;
+}
+
+.search-box {
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.search {
+  width: 60%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

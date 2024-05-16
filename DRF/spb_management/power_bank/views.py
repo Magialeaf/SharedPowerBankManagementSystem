@@ -14,6 +14,7 @@ from spb_management.router.permission import MoreAndMaintainerPermission, MoreAn
 from spb_management.router.response_data import response, ResponseCode
 from spb_management.utils.my_exception import validation_exception
 from spb_management.utils.page_operation import set_extra_page
+from users.models import Identity
 
 # Create your views here.
 """
@@ -192,6 +193,9 @@ class PowerBankMaintenanceView(CRUDInterface):
             if finished := conditions.get("finished", None):
                 base_query &= Q(finished=finished)
 
+            if new_status := conditions.get("new_status", None):
+                base_query &= Q(new_status=new_status)
+
             if not (order_by := conditions.get("order_by", None)):
                 order_by = []
 
@@ -208,6 +212,11 @@ class PowerBankMaintenanceView(CRUDInterface):
 
     def create_info(self, request, version, kwargs):
         conditions, data = Internet.get_internet_data(request)
+        account = int(data["maintainer_account"])
+        identity = request.user.get("identity", -1)
+        if identity == Identity.MAINTAINER.value and request.user.get("aid", -2) != account:
+            return response(ResponseCode.ERROR, "您不是该维护人员", {})
+
         serializer = PowerBankMaintenanceSerializer(data=data)
         try:
             serializer.is_valid(raise_exception=True)
@@ -220,6 +229,11 @@ class PowerBankMaintenanceView(CRUDInterface):
     def update_info(self, request, version, kwargs):
         id_ = kwargs.get("pk", None)
         conditions, data = Internet.get_internet_data(request)
+        account = int(data["maintainer_account"])
+        identity = request.user.get("identity", -1)
+        if identity == Identity.MAINTAINER.value and request.user.get("aid", -2) != account:
+            return response(ResponseCode.ERROR, "您不是该维护人员", {})
+
         try:
             instance = PowerBankMaintenanceInfo.objects.filter(id=id_).first()
         except PowerBankMaintenanceInfo.DoesNotExist:

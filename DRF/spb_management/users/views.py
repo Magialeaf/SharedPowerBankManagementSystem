@@ -54,6 +54,10 @@ class EnterView(GetAndPostAPIView):
                 if serializer.is_valid(raise_exception=True):
                     res_tuple = self.authenticate_user(serializer.validated_data)
                     if res_tuple[0]:
+                        # 销毁enter限流
+                        ip = Internet.get_real_ip(request)
+                        caches['throttle'].delete('throttle_enter_' + ip)
+
                         data = set_jwt_token({}, create_jwt_token(res_tuple[2], TOKEN_TIME))
                         return response(ResponseCode.SUCCESS, res_tuple[1], data)
                     else:
@@ -63,6 +67,10 @@ class EnterView(GetAndPostAPIView):
         elif "login" in conditions and conditions["login"] == 'email':
             res_tuple = self.authenticate_user(data)
             if res_tuple[0]:
+                # 销毁enter限流
+                ip = Internet.get_real_ip(request)
+                caches['throttle'].delete('throttle_enter_' + ip)
+
                 data = set_jwt_token({}, create_jwt_token(res_tuple[2], TOKEN_TIME))
                 return response(ResponseCode.SUCCESS, res_tuple[1], data)
             else:
@@ -92,8 +100,11 @@ class EnterView(GetAndPostAPIView):
 
                 # 注册并保存用户信息
                 aid = serializer.save()
-
                 destroy_captcha(new_data["email"], ip)
+
+                # 销毁enter限流
+                ip = Internet.get_real_ip(request)
+                caches['throttle'].delete('throttle_enter_' + ip)
 
                 # 处理注册逻辑
                 data = set_jwt_token({}, create_jwt_token(aid, TOKEN_TIME))
@@ -401,7 +412,7 @@ class UserAvatarView(GetAndPostAPIView):
 
 
 class MaintainView(GetAndPostAPIView):
-    permission_classes = [MoreAndMaintainerPermission, ]
+    permission_classes = [MoreAndAdminPermission, ]
     throttle_classes = [MaintainThrottle, ]
 
     def get(self, request, version, **kwargs):

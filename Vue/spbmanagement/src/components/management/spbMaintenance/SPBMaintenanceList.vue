@@ -17,7 +17,7 @@
     <el-table-column
       class="table-column"
       column-key="status"
-      :filters="statusList"
+      :filters="errorStatusList"
       :filter-multiple="false"
       min-width="7%"
       prop="status"
@@ -37,7 +37,7 @@
     />
     <el-table-column
       class="table-column"
-      min-width="14%"
+      min-width="12%"
       prop="question_description"
       label="问题描述"
     />
@@ -53,15 +53,24 @@
     <el-table-column
       class="table-column"
       sortable="custom"
-      min-width="10%"
+      min-width="9%"
       prop="date"
       label="处理日期"
     />
     <el-table-column
       class="table-column"
-      min-width="14%"
+      min-width="10%"
       prop="maintenance_result"
       label="处理结果"
+    />
+    <el-table-column
+      class="table-column"
+      column-key="new_status"
+      :filters="statusList"
+      :filter-multiple="false"
+      min-width="7%"
+      prop="new_status"
+      label="处理后状态"
     />
 
     <el-table-column min-width="15%" label="操作">
@@ -87,6 +96,13 @@ const powerBankStore = useSPBMaintenanceStore()
 const configStore = useSPBConfigStore()
 
 const powerBankList = computed(() => prop.powerBankData)
+
+const errorStatusList = computed(() =>
+  Object.entries(configStore.getErrorStatusChoices()).map(([value, text]) => ({
+    text,
+    value: parseInt(value)
+  }))
+)
 
 const statusList = computed(() =>
   Object.entries(configStore.getPowerBankStatusChoices()).map(([value, text]) => ({
@@ -124,11 +140,12 @@ function deleteRow(row) {
     })
 }
 
-const emits = defineEmits(['filter-status', 'filter-finished', 'sort-by'])
+const emits = defineEmits(['filter-status', 'filter-finished', 'filter-new-status', 'sort-by'])
 
 function handleFilter(filters) {
   if (filters.status) emits('filter-status', filters.status[0])
   if (filters.finished) emits('filter-finished', filters.finished[0])
+  if (filters.new_status) emits('filter-new-status', filters.new_status[0])
 }
 function handleSort(sortBy) {
   const { prop, order } = sortBy

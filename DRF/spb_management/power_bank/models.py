@@ -48,3 +48,4 @@ class PowerBankMaintenanceInfo(models.Model):
     date = models.DateTimeField(verbose_name="处理日期", null=True, blank=True)
     question_description = models.CharField(verbose_name="问题描述", max_length=50)
     maintenance_result = models.CharField(verbose_name="处理结果", max_length=50)
+    new_status = models.SmallIntegerField(verbose_name="新状态", choices=POWER_BANK_STATUS_CHOICES, default=0)

@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.db import transaction
 from rest_framework import serializers
-from my_celery.orders.tasks import charge_power_bank
+from my_celery.orders.tasks import charge_power_bank, cancel_charging_task_by_power_bank_id
 from merchants.models import MerchantInfo
 from power_bank.models import PowerBankInfo, PowerBankMaintenanceInfo, StatusDescription
 from spb_management.router.image_operation import ImgAPI
@@ -33,11 +33,23 @@ class PowerBankSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return PowerBankInfo.objects.create(**validated_data)
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         status = validated_data.get('status', None)
         if status == StatusDescription.charging:
             instance.status = status
             charge_power_bank.delay(instance.id)
+        elif instance.status == StatusDescription.charging:
+            cancel_charging_task_by_power_bank_id(instance.id)
+            instance.status = validated_data.get('status', instance.status)
+        elif status == StatusDescription.scrap or status == StatusDescription.error:
+            # 产生一条维护记录（如果已经有且未完成，修改状态，如果没有，创建）
+            query = PowerBankMaintenanceInfo.objects.filter(power_bank=instance, finished=False)
+            if query.exists():
+                query.update(status=status)
+            else:
+                PowerBankMaintenanceInfo.objects.create(power_bank=instance, status=status)
+            instance.status = validated_data.get('status', instance.status)
         else:
             instance.status = validated_data.get('status', instance.status)
 
@@ -78,20 +90,36 @@ class PowerBankMaintenanceSerializer(serializers.ModelSerializer):
     date = serializers.CharField(max_length=20, default="", allow_blank=True, error_messages={'max_length': "处理日期长度不能超过20个字符"})
     question_description = serializers.CharField(max_length=50, default="", allow_blank=True, error_messages={'max_length': "问题描述长度不能超过50个字符"})
     maintenance_result = serializers.CharField(max_length=50, default="", allow_blank=True, error_messages={'max_length': "处理结果长度不能超过50个字符"})
+    new_status = serializers.IntegerField(default=0, error_messages={'required': "缺少状态"})
 
     class Meta:
         model = PowerBankMaintenanceInfo
         fields = "__all__"
+        extra_kwargs = {
+            'new_status': {'read_only': True},
+        }
 
     def validate_date(self, value):
         if value == '':
             return None
         return value
 
+    @transaction.atomic
     def create(self, validated_data):
+        power_bank = validated_data.get('power_bank', None)
+        query = PowerBankMaintenanceInfo.objects.filter(power_bank=power_bank, finished=False).first()
+        if query:
+            raise serializers.ValidationError("该充电宝已有未完成的维护记录")
         return PowerBankMaintenanceInfo.objects.create(**validated_data)
 
+    @transaction.atomic
     def update(self, instance, validated_data):
+        if instance.finished == 1:
+            raise serializers.ValidationError("该记录已被处理，无法修改")
+
+        instance.power_bank.status = validated_data.get('new_status', instance.power_bank.status)
+        instance.power_bank.save()
+
         instance.status = validated_data.get('status', instance.status)
         instance.maintainer_account = validated_data.get('maintainer_account', instance.maintainer_account)
         instance.finished = validated_data.get('finished', instance.finished)

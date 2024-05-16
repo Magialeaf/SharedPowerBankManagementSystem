@@ -19,7 +19,7 @@ import {
 } from '@/api/powerBankAPI.js'
 
 export const useSPBConfigStore = defineStore('SPBConfig', () => {
-  const defaultImgURL = ref('http://127.0.0.1:8000/media/images/power_bank_img/default.png')
+  const defaultImgURL = ref('http://39.101.75.20/media/images/power_bank_img/default.png')
 
   const powerBankStatusChoices = ref({
     0: '空闲',
@@ -259,6 +259,7 @@ export const useSPBMaintenanceStore = defineStore('SPBMaintenanceList', () => {
     if (data && data.length) {
       data.forEach((item) => {
         item.status = powerBankConfig.getStatusDisplay(item.status)
+        item.new_status = powerBankConfig.getStatusDisplay(item.new_status)
         item.date = convertBackendTimestampToLocalTime(item.date)
         item.finished = item.finished ? '是' : '否'
       })

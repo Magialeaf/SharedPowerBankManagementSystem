@@ -7,7 +7,7 @@ import base64
 
 class RSAFunc:
     def __init__(self, path='../static/pwd/private.pem'):
-        private_key = '''-----'''
+        private_key = ''''''
 
         # try:
         #     with open(path, 'rb') as f:

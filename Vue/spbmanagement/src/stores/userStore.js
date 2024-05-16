@@ -19,7 +19,7 @@ import { useIdentityStore } from './authenticationStore'
 import { convertBackendTimestampToLocalTime } from '@/utils/convert'
 
 export const useUserStore = defineStore('userList', () => {
-  const defaultAvatarURL = ref('http://127.0.0.1:8000/media/images/user_avatars/default.png')
+  const defaultAvatarURL = ref('http://39.101.75.20/media/images/user_avatars/default.png')
   const userList = ref()
   const constConditions = ref({
     table: 'user',

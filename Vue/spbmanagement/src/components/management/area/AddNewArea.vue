@@ -54,7 +54,7 @@
 </template>
 
 <script setup>
-import { onBeforeMount, ref } from 'vue'
+import { nextTick, onBeforeMount, ref } from 'vue'
 import { lockFunction } from '@/utils/myLock.js'
 import { areaLen, areaDescLen, validate_longitude, validate_latitude } from '@/utils/validateArea'
 import { useAreaStore, useAddressStore } from '@/stores/areaStore'
@@ -69,6 +69,7 @@ const ifHaveArea = ref(false)
 
 const zoom = ref(15)
 const doubleClickZoom = ref(false)
+const loading = ref(false)
 
 const control = {
   scale: {},
@@ -103,28 +104,37 @@ const updateView = lockFunction(500)((
   areaInfo.value.latitude = validate_latitude(lat, len.value)
   areaInfo.value.longitude = validate_longitude(lng, len.value)
   center.value = { lat: areaInfo.value.latitude, lng: areaInfo.value.longitude }
-  if (!getAreaFromAPI()) {
-    addressStore.reverseGeocode(areaInfo.value.latitude, areaInfo.value.longitude).then((res) => {
-      if (res.result.ad_info.adcode) {
-        areaInfo.value.code = res.result.ad_info.adcode
-        areaInfo.value.name = res.result.address_component.street_number
-          ? res.result.address_component.street_number
-          : res.result.address_component.street
-      } else {
-        areaInfo.value.code = '000000'
-        areaInfo.value.name = ''
-      }
-      codeList.value = [
-        areaInfo.value.code.slice(0, 2),
-        areaInfo.value.code.slice(0, 4),
-        areaInfo.value.code
-      ]
-    })
-  }
+
+  loading.value = true
+  nextTick(() => {
+    getAreaFromAPI()
+      .then((res) => {})
+      .catch((e) => {
+        addressStore
+          .reverseGeocode(areaInfo.value.latitude, areaInfo.value.longitude)
+          .then((res) => {
+            if (res.result.ad_info.adcode) {
+              areaInfo.value.code = res.result.ad_info.adcode
+              areaInfo.value.name = res.result.address_component.street_number
+                ? res.result.address_component.street_number
+                : res.result.address_component.street
+            } else {
+              areaInfo.value.code = '000000'
+              areaInfo.value.name = ''
+            }
+            codeList.value = [
+              areaInfo.value.code.slice(0, 2),
+              areaInfo.value.code.slice(0, 4),
+              areaInfo.value.code
+            ]
+            loading.value = false
+          })
+      })
+  })
 })
 
 function getAreaFromAPI() {
-  areaStore
+  return areaStore
     .getAreaByLatAndLon(areaInfo.value.latitude, areaInfo.value.longitude)
     .then((res) => {
       areaInfo.value = res.data
@@ -142,7 +152,7 @@ function getAreaFromAPI() {
       areaInfo.value.name = ''
       areaInfo.value.description = ''
       codeList.value = ['00', '0000', '000000']
-      return false
+      throw Error('没有缓存')
     })
 }
 
@@ -176,6 +186,8 @@ function areaSelected(value) {
 
 onBeforeMount(() => {
   getAreaFromAPI()
+    .then((res) => {})
+    .catch((e) => {})
 })
 </script>
 

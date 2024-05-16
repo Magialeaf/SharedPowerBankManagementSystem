@@ -36,6 +36,7 @@
       :powerBankData="powerBankMaintenanceList"
       @filter-status="handleFilterStatus"
       @filter-finished="handleFilterFinished"
+      @filter-new-status="handleFilterNewStatus"
       @sort-by="handleSortBy"
     />
     <div class="pagination">
@@ -134,6 +135,11 @@ function handleFilterStatus(value) {
 
 function handleFilterFinished(value) {
   searchKey.value.finished = value
+  handleSearch()
+}
+
+function handleFilterNewStatus(value) {
+  searchKey.value.new_status = value
   handleSearch()
 }
 

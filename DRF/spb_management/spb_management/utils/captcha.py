@@ -22,7 +22,7 @@ def send_captcha_email(email, captcha):
     """
 
     # 发送邮件
-    # send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
 
 
 def set_captcha(email, ip, captcha_value):
@@ -39,3 +39,4 @@ def destroy_captcha(email, ip):
     caches['user_captcha'].delete(f"captcha:{email}")
     caches['user_captcha'].delete(f'blocked:{ip}')
     caches['user_captcha'].delete(f'blocked:{email}')
+

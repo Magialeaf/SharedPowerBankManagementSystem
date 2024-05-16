@@ -60,10 +60,6 @@ const props = defineProps({
   }
 })
 
-const searchKey = ref({
-  order_by: []
-})
-
 const orderUserStore = useOrderUserStore()
 const orderList = computed(() => props.data)
 
@@ -80,19 +76,16 @@ const showDetail = (row) => {
   router.push({ path: `/product/${row.power_bank}` })
 }
 
+const emits = defineEmits(['sort-data'])
+
 function handleSortChange(val) {
   const { prop, order } = val
 
   if (order === 'ascending') {
-    searchKey.value.order_by = [prop]
+    emits('sort-data', prop)
   } else {
-    searchKey.value.order_by = [`-${prop}`]
+    emits('sort-data', `-${prop}`)
   }
-
-  orderUserStore
-    .getList(orderUserStore.getPageInfo().currentPage, searchKey.value)
-    .then((res) => {})
-    .catch((e) => {})
 }
 </script>
 

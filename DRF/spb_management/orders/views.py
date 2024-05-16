@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.db.models import Q, Subquery, OuterRef
 from django.shortcuts import render
 from rest_framework.exceptions import ValidationError
@@ -391,17 +392,21 @@ class UserOrderOperationView(CRUDInterface):
         items_per_page = 10
         start_index = (page - 1) * items_per_page
 
-        order_by = conditions.get("order_by", None) or ["-rental_date"]
+        base_query = Q()
+        search_fields = ["power_bank__name"]
+        if keyword := conditions.get("keyword", None):
+            for field in search_fields:
+                base_query |= Q(**{f'{field}__icontains': keyword})
 
-        # 共享的过滤条件
-        common_filter = Q(user=uid)
+        order_by = conditions.get("order_by", None) or ["-rental_date"]
+        base_query &= Q(user=uid)
 
         # 根据排序字段动态构建查询
         if order_by[0] in ("-fee", "fee", "pay_date", "-pay_date"):
             subquery = PowerBankFeeInfo.objects.filter(rental=OuterRef('pk')).order_by(*order_by)
             query = (
                 PowerBankRentalInfo.objects
-                .filter(common_filter)
+                .filter(base_query)
                 .annotate(fee=Subquery(subquery.values('fee')[:1]), pay_date=Subquery(subquery.values('pay_date')[:1]))
                 .order_by(order_by[0])
             )
@@ -410,13 +415,13 @@ class UserOrderOperationView(CRUDInterface):
 
             query = (
                 PowerBankRentalInfo.objects
-                .filter(common_filter)
+                .filter(base_query)
                 .annotate(return_date=Subquery(subquery.values('return_date')[:1]))
                 .order_by(order_by[0])
             )
         else:
-            query = PowerBankRentalInfo.objects.filter(common_filter).order_by(*order_by)
-        total_query = PowerBankRentalInfo.objects.filter(user=uid)
+            query = PowerBankRentalInfo.objects.filter(base_query).order_by(*order_by)
+        total_query = PowerBankRentalInfo.objects.filter(base_query)
 
         # 应用分页
         query = query[start_index:start_index + items_per_page]
@@ -447,7 +452,7 @@ class UserOrderOperationView(CRUDInterface):
         except ValidationError as e:
             return validation_exception(e)
 
-
+    @transaction.atomic
     def update_info(self, request, version, kwargs):
         conditions, data = Internet.get_internet_data(request)
         uid = request.user.get("uid", None)

@@ -32,7 +32,7 @@ export const useNoticeConfigStore = defineStore('noticeConfig', () => {
 
 // 通知消息
 export const useNoticeStore = defineStore('noticeList', () => {
-  const defaultImg = ref('http://127.0.0.1:8000/media/images/notice_img/default.png')
+  const defaultImg = ref('http://39.101.75.20/media/images/notice_img/default.png')
   const noticeConfigStore = useNoticeConfigStore()
 
   const dataList = ref([])

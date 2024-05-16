@@ -26,7 +26,7 @@
       ></el-input>
     </el-form-item>
     <el-form-item label="状态">
-      <el-select v-model="powerBankInfo.status" placeholder="请选择">
+      <el-select v-model="powerBankInfo.status" placeholder="请选择" :disabled="finished">
         <el-option
           v-for="(label, value) in spbConfigStore.getErrorStatusChoices()"
           :key="value"
@@ -35,8 +35,19 @@
         ></el-option>
       </el-select>
     </el-form-item>
-    <el-form-item label="维护人员">
-      <el-select v-model="powerBankInfo.maintainer_account" placeholder="请选择">
+    <el-form-item
+      label="维护人员"
+      v-if="
+        jwtTokenStore.getIdentityCode() === identityStore.SuperAdmin ||
+        jwtTokenStore.getIdentityCode() === identityStore.Admin ||
+        powerBankInfo.finished
+      "
+    >
+      <el-select
+        v-model="powerBankInfo.maintainer_account"
+        placeholder="请选择"
+        :disabled="finished"
+      >
         <el-option
           v-for="item in maintainerList"
           :key="item.id"
@@ -45,25 +56,39 @@
         ></el-option>
       </el-select>
     </el-form-item>
+    <el-form-item label="维护人员" v-else>
+      <el-input :value="userInfo[0].id + '.' + userInfo[1].username" :disabled="true" />
+    </el-form-item>
     <el-form-item label="问题描述" :maxlength="50"
-      ><el-input v-model="powerBankInfo.question_description"></el-input
+      ><el-input v-model="powerBankInfo.question_description" :disabled="finished"></el-input
     ></el-form-item>
-    <el-form-item v-if="!ifNew" label="维护时间">
+    <el-form-item v-if="!ifNew" label="处理时间">
       <el-date-picker
         v-model="powerBankInfo.date"
         type="datetime"
         placeholder="选择日期"
         format="YYYY/MM/DD HH:mm:ss"
         value-format="YYYY-MM-DD HH:mm:ss"
+        :disabled="finished"
       ></el-date-picker>
     </el-form-item>
-    <el-form-item v-if="!ifNew" label="是否修复">
-      <el-switch v-model="powerBankInfo.finished"></el-switch>
+    <el-form-item v-if="!ifNew" label="是否处理">
+      <el-switch v-model="powerBankInfo.finished" :disabled="finished"></el-switch>
     </el-form-item>
     <el-form-item v-if="!ifNew" label="维护结果" :maxlength="50">
-      <el-input v-model="powerBankInfo.maintenance_result"></el-input>
+      <el-input v-model="powerBankInfo.maintenance_result" :disabled="finished"></el-input>
     </el-form-item>
-    <el-form-item>
+    <el-form-item label="处理后状态">
+      <el-select v-model="powerBankInfo.new_status" placeholder="请选择" :disabled="finished">
+        <el-option
+          v-for="(label, value) in spbConfigStore.getPowerBankStatusChoices()"
+          :key="value"
+          :label="label"
+          :value="value"
+        ></el-option>
+      </el-select>
+    </el-form-item>
+    <el-form-item v-if="!finished">
       <el-button type="success" @click="onSubmit">{{
         ifNew ? '新增充电宝' : '更新充电宝'
       }}</el-button>
@@ -73,6 +98,8 @@
 
 <script setup>
 import { onBeforeMount, ref, defineProps, computed } from 'vue'
+import { useJwtTokenStore, useIdentityStore } from '@/stores/authenticationStore'
+import { useUserStore } from '@/stores/userStore'
 import { useSPBConfigStore, useSPBMaintenanceStore } from '@/stores/SPBStore'
 import { useMaintainNameStore, usePowerBankNameStore } from '@/stores/nameList.js'
 import { lockFunction } from '@/utils/myLock'
@@ -81,9 +108,14 @@ const spbConfigStore = useSPBConfigStore()
 const powerBankNameStore = usePowerBankNameStore()
 const spbMaintenance = useSPBMaintenanceStore()
 const maintainNameStore = useMaintainNameStore()
+const jwtTokenStore = useJwtTokenStore()
+const identityStore = useIdentityStore()
+const userStore = useUserStore()
 
 const powerBankList = computed(() => powerBankNameStore.showList())
 const maintainerList = computed(() => maintainNameStore.showList())
+
+const finished = ref(false)
 
 const powerBankInfo = ref({
   id: -1,
@@ -94,8 +126,11 @@ const powerBankInfo = ref({
   question_description: null,
   finished: false,
   date: null,
-  maintenance_result: ''
+  maintenance_result: '',
+  new_status: '1'
 })
+
+const userInfo = ref([{ id: -1 }, { username: null }])
 
 const props = defineProps({
   id: {
@@ -124,6 +159,7 @@ const onSubmit = lockFunction()(() => {
       .updateInfo(props.id, inputData)
       .then((res) => {
         // console.log(res)
+        finished.value = res.data.finished
       })
       .catch((err) => {})
   }
@@ -134,13 +170,36 @@ onBeforeMount(() => {
     spbMaintenance.getInfo(props.id).then((res) => {
       powerBankInfo.value = res.data
       powerBankInfo.value.status = res.data.status.toString()
+      powerBankInfo.value.new_status = '0'
+      finished.value = res.data.finished
+
+      if (jwtTokenStore.getIdentityCode() === identityStore.Maintainer) {
+        userStore
+          .getMyInfo()
+          .then((res) => {
+            userInfo.value = res.data
+            powerBankInfo.value.maintainer_account = userInfo.value[0].id
+          })
+          .catch((e) => {})
+      }
     })
   } else {
     powerBankNameStore
       .initList()
       .then((res) => {})
       .catch((e) => {})
+
+    if (jwtTokenStore.getIdentityCode() === identityStore.Maintainer) {
+      userStore
+        .getMyInfo()
+        .then((res) => {
+          userInfo.value = res.data
+          powerBankInfo.value.maintainer_account = userInfo.value[0].id
+        })
+        .catch((e) => {})
+    }
   }
+
   maintainNameStore
     .initList()
     .then((res) => {

@@ -7,8 +7,8 @@ import { getPowerBankNameListAPI } from '@/api/powerBankAPI.js'
 // 获得维护人员名字列表
 export const useMaintainNameStore = defineStore('maintainNameList', () => {
   const maintainNameList = ref([])
-  async function initList() {
-    return getMaintainNameListAPI()
+  async function initList(conditions) {
+    return getMaintainNameListAPI(conditions)
       .then((res) => {
         maintainNameList.value = res.data
         return res

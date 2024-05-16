@@ -31,7 +31,7 @@ drf_port = "8000"
 drf_url = f"http://{drf_ip}:{drf_port}"
 
 
-ALLOWED_HOSTS = [drf_ip]
+ALLOWED_HOSTS = [drf_ip, ]
 
 
 # Application definition
@@ -226,6 +226,15 @@ CACHES = {
             "CONNECTION_POOL_KWARGS": {"max_connections": 100}
         }
     },
+    "power_bank": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        # 网址，可以是多个
+        "LOCATION": f"redis://{drf_ip}:{redis_port}/6",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {"max_connections": 100}
+        }
+    },
     "celery_broker_url": {
         "BACKEND": "django_redis.cache.RedisCache",
         # 网址，可以是多个
@@ -257,6 +266,23 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 # 收件人看到的发件人
 DEFAULT_FROM_EMAIL = global_studio_name + ''
+
+
+"""
+云端设置
+# 发送邮件
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.163.com'
+EMAIL_PORT = 465
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+# 发送邮件的邮箱
+EMAIL_HOST_USER = ''
+# 在邮箱中设置的授权密码
+EMAIL_HOST_PASSWORD = ''
+# 收件人看到的发件人
+DEFAULT_FROM_EMAIL = global_studio_name + ''
+"""
 
 
 # 配置文件存储目录

@@ -4,6 +4,8 @@ from sqlite3 import IntegrityError
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+
+
 from orders.models import PowerBankRentalInfo, PowerBankReturnInfo, PowerBankFeeInfo
 from orders.utils.orders import generate_unique_order_number
 from power_bank.models import PowerBankInfo, StatusDescription
@@ -63,6 +65,9 @@ class PowerBankRentalSerializer(serializers.ModelSerializer):
             instance.power_bank.status = 0
             instance.power_bank.save()
             instance.save()  # 明确指定更新字段
+
+            from my_celery.orders.tasks import cancel_charging_task_by_power_bank_id
+            cancel_charging_task_by_power_bank_id(instance.power_bank.id)
             return instance
 
         raise serializers.ValidationError("更新失败")

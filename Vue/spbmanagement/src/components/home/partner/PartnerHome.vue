@@ -12,22 +12,20 @@
     <div class="operation">
       <h2 class="operation-title">该商户管理的共享充电宝</h2>
       <div class="operation-content">
-        <div class="operation-content">
-          <div class="charging-banks-row">
-            <div
-              v-for="(powerBank, index) in powerBankList"
-              :key="index"
-              class="power-bank-item"
-              :class="{ 'last-in-row': index % 5 === 4 }"
+        <div class="charging-banks-row">
+          <div
+            v-for="(powerBank, index) in powerBankList"
+            :key="index"
+            class="power-bank-item"
+            :class="{ 'last-in-row': index % 5 === 4 }"
+          >
+            <el-button
+              type="primary"
+              @click="showDetail(powerBank.id)"
+              style="width: 100%; height: 100%"
             >
-              <el-button
-                type="primary"
-                @click="showDetail(powerBank.id)"
-                style="width: 100%; height: 100%"
-              >
-                {{ powerBank.name }}
-              </el-button>
-            </div>
+              {{ powerBank.name }}
+            </el-button>
           </div>
         </div>
       </div>

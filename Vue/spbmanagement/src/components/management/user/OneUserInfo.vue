@@ -4,7 +4,11 @@
       switchValue ? '切换至账户信息' : '切换至用户信息'
     }}</el-button>
     <el-button
-      v-if="accountInfo.identity == identityStore.Maintainer"
+      v-if="
+        accountInfo.identity == identityStore.Maintainer &&
+        (jwtTokenStore.getIdentityCode() === identityStore.SuperAdmin ||
+          jwtTokenStore.getIdentityCode() === identityStore.Admin)
+      "
       type="primary"
       @click="maintenanceValue = true"
       >{{ '切换至区域管理' }}</el-button
@@ -30,7 +34,7 @@
 import { ref, onBeforeMount } from 'vue'
 import { convertBackendTimestampToLocalTime } from '@/utils/convert.js'
 import { useUserStore } from '@/stores/userStore'
-import { useIdentityStore } from '@/stores/authenticationStore'
+import { useJwtTokenStore, useIdentityStore } from '@/stores/authenticationStore'
 import MaintenanceOperation from '@/components/management/user/MaintenanceOperation.vue'
 import AccountOperation from '@/components/management/user/AccountOperation.vue'
 import UserOperation from '@/components/management/user/UserOperation.vue'
@@ -40,6 +44,7 @@ const maintenanceValue = ref(false)
 
 const userStore = useUserStore()
 const identityStore = useIdentityStore()
+const jwtTokenStore = useJwtTokenStore()
 
 const ifMyself = ref(true)
 
