@@ -167,6 +167,6 @@ class HotMerchantView(GetAndPostAPIView):
         return response(ResponseCode.ERROR, "请求参数错误", {})
 
     def get_hot_merchant(self):
-        query = MerchantInfo.objects.all()[:6]
+        query = MerchantInfo.objects.order_by("-id")[:6]
         data = MerchantSerializer(query, many=True).data
-        return response(ResponseCode.SUCCESS, "获取热门商户成功", data)
+        return response(ResponseCode.SUCCESS, "获取新商户成功", data)

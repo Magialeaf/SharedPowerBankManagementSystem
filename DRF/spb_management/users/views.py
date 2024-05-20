@@ -465,6 +465,7 @@ class MaintainView(GetAndPostAPIView):
                 except ValidationError as e:
                     return validation_exception(e)
             else:
+                res = []
                 try:
                     for key, value in data.items():
                         value = int(value)
@@ -477,9 +478,8 @@ class MaintainView(GetAndPostAPIView):
 
                         query = MaintainInfo.objects.filter(aid=aid).order_by("id")
                         serializer = MaintainSerializer(data=query, many=True)
-                        data = serializer.to_representation(query)
-
-                        return response(ResponseCode.SUCCESS, "创建成功", data)
+                        res = serializer.to_representation(query)
+                    return response(ResponseCode.SUCCESS, "创建成功", res)
                 except ValidationError as e:
                     return validation_exception(e)
 

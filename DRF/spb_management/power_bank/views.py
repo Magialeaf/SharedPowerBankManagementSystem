@@ -2,7 +2,7 @@ from django.db.models import Q
 from django.shortcuts import render
 from rest_framework.exceptions import ValidationError
 
-from power_bank.models import PowerBankInfo, PowerBankMaintenanceInfo
+from power_bank.models import PowerBankInfo, PowerBankMaintenanceInfo, StatusDescription
 from power_bank.utils.throttle import PowerBankImgThrottle, PowerBankThrottle, PowerBankMaintenanceThrottle
 from power_bank.utils.serializer import PowerBankSerializer, PowerBankMaintenanceSerializer
 from spb_management.base_class.CRUDInterface import CRUDInterface, UnknownActionError
@@ -96,15 +96,16 @@ class PowerBankView(CRUDInterface):
         conditions, data = Internet.get_internet_data(request)
 
         if merchant := conditions.get("merchant", None):
-            query = PowerBankInfo.objects.filter(merchant=merchant).values('id','name')
+            query = PowerBankInfo.objects.filter(merchant=merchant).values('id','name', 'img')
         else:
-            query = PowerBankInfo.objects.values('id','name')
-        data = [{'id': item['id'], 'name': item['name']} for item in query]
+            query = PowerBankInfo.objects.values('id', 'name', 'img')
+        data = [{'id': item['id'], 'name': item['name'], 'img': ImgAPI.get_power_bank_img(item['img'])} for item in query]
 
         return response(ResponseCode.SUCCESS, "获取成功", data)
 
     def create_info(self, request, version, kwargs):
         conditions, data = Internet.get_internet_data(request)
+        data['status'] = StatusDescription.free
         serializer = PowerBankSerializer(data=data)
         try:
             serializer.is_valid(raise_exception=True)
@@ -212,7 +213,10 @@ class PowerBankMaintenanceView(CRUDInterface):
 
     def create_info(self, request, version, kwargs):
         conditions, data = Internet.get_internet_data(request)
-        account = int(data["maintainer_account"])
+        if data["maintainer_account"] != '':
+            account = int(data["maintainer_account"])
+        else:
+            account = None
         identity = request.user.get("identity", -1)
         if identity == Identity.MAINTAINER.value and request.user.get("aid", -2) != account:
             return response(ResponseCode.ERROR, "您不是该维护人员", {})
@@ -274,6 +278,7 @@ class HotPowerBankView(GetAndPostAPIView):
         return response(ResponseCode.ERROR, "请求参数错误", {})
 
     def get_hot_power_bank(self):
-        query = PowerBankInfo.objects.all()[:6]
+        # 获取id最大的六个充电宝
+        query = PowerBankInfo.objects.all().order_by("-id")[:6]
         data = PowerBankSerializer(query, many=True).data
-        return response(ResponseCode.SUCCESS, "获取热门商户成功", data)
+        return response(ResponseCode.SUCCESS, "获取新充电宝成功", data)

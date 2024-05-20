@@ -2,6 +2,7 @@
   <div class="title-box">
     <h2 class="title">{{ accountLogin ? '账号登录' : '邮箱登录' }}</h2>
   </div>
+
   <el-form
     v-if="accountLogin"
     class="form-item"
@@ -38,6 +39,12 @@
       />
     </el-form-item>
   </el-form>
+
+  <div class="switch-login">
+    <el-button @click="accountLogin = !accountLogin"
+      >切换到{{ accountLogin ? '邮箱登录' : '账号登录' }}</el-button
+    >
+  </div>
 </template>
 
 <script setup>
@@ -104,5 +111,11 @@ function login() {
   letter-spacing: 5px;
   text-shadow: 4px 4px 3px rgba(0, 0, 0, 0.1);
   margin-bottom: 50px;
+}
+
+.switch-login {
+  display: flex;
+  justify-content: center;
+  text-align: center;
 }
 </style>

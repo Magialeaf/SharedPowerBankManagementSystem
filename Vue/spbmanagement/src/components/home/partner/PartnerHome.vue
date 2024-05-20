@@ -18,12 +18,10 @@
             :key="index"
             class="power-bank-item"
             :class="{ 'last-in-row': index % 5 === 4 }"
+            @click="showDetail(powerBank.id)"
           >
-            <el-button
-              type="primary"
-              @click="showDetail(powerBank.id)"
-              style="width: 100%; height: 100%"
-            >
+            <img class="power-bank-img" :src="powerBank.img" />
+            <el-button class="power-bank-button" type="primary">
               {{ powerBank.name }}
             </el-button>
           </div>
@@ -130,14 +128,30 @@ const showDetail = (powerBankId) => {
   width: 100%;
 }
 
+.last-in-row {
+  margin-right: 0; /* 取消最后一列的右边距 */
+}
+
 .power-bank-item {
-  flex: 0 0 calc(17% + 7.6px); /* 调整宽度并减去左右间距 */
+  flex: 0 0 calc(17% + 3px); /* 调整宽度并减去左右间距 */
   margin: 10px; /* 上下左右的外边距 */
+  border: 1px solid rgb(64, 158, 255);
+  border-radius: 3px;
   text-align: center;
   cursor: pointer;
 }
 
-.last-in-row {
-  margin-right: 0; /* 取消最后一列的右边距 */
+.power-bank-img {
+  width: 100%;
+  height: 80%;
+}
+
+.power-bank-button {
+  width: 100%;
+  height: 20%;
+  line-height: 20%; /* 确保文本垂直居中 */
+  white-space: nowrap; /* 不换行 */
+  overflow: hidden; /* 隐藏超出部分 */
+  text-overflow: ellipsis; /* 显示省略号 */
 }
 </style>

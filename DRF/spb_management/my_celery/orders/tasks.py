@@ -90,7 +90,8 @@ def check_charging_status(self, power_bank: int):
                 schedule_and_store_task_id(check_charging_status, power_bank.id, unit)
             else:
                 power_bank.electricity_percentage = 0
-                power_bank.save(update_fields=["electricity_percentage"])
+                power_bank.status = StatusDescription.charging
+                power_bank.save(update_fields=["electricity_percentage", "status"])
 
                 # 准备更新数据，假设标记为已归还
                 data = {"returned": True}

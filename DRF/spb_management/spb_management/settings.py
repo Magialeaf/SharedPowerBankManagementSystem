@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-mzlf_w#-&o-i$&optx83sarx@6=(4o6##mnm@c+v+x+xv_fmux'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # 增加：server 地址
 drf_ip = "127.0.0.1"
@@ -31,7 +31,7 @@ drf_port = "8000"
 drf_url = f"http://{drf_ip}:{drf_port}"
 
 
-ALLOWED_HOSTS = [drf_ip, ]
+ALLOWED_HOSTS = [drf_ip, "39.101.75.20"]
 
 
 # Application definition

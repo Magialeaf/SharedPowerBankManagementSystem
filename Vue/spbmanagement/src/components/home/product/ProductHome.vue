@@ -14,7 +14,10 @@
         <el-button :disabled="!data.merchant" type="primary" @click="jumpMerchant()"
           >跳转到对应商户</el-button
         >
-        <el-button :disabled="!(data.status === 0)" type="primary" @click="lease()"
+        <el-button
+          :disabled="!(data.status === 0 || data.status === 1)"
+          type="primary"
+          @click="lease()"
           >租用该充电宝</el-button
         >
       </div>

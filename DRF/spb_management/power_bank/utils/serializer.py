@@ -36,7 +36,11 @@ class PowerBankSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def update(self, instance, validated_data):
         status = validated_data.get('status', None)
-        if status == StatusDescription.charging:
+        if instance.status == StatusDescription.scrap or instance.status == StatusDescription.error:
+            query = PowerBankMaintenanceInfo.objects.filter(power_bank=instance, finished=False)
+            if query.exists():
+                raise serializers.ValidationError("该充电宝正在维修中，请等待维修完成")
+        elif status == StatusDescription.charging:
             instance.status = status
             charge_power_bank.delay(instance.id)
         elif instance.status == StatusDescription.charging:

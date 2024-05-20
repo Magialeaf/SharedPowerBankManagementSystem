@@ -117,7 +117,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { $confirmDeleteMsg, $successMsg } from '@/utils/msg'
 import { useIdentityStore, useJwtTokenStore } from '@/stores/authenticationStore'
@@ -141,7 +141,7 @@ const accountStore = useAccountStore()
 const router = useRouter()
 
 const ifMyself = computed(() => prop.ifMyself)
-const accountInfo = computed(() => prop.accountData)
+const tempAccountInfo = computed(() => prop.accountData)
 const captchaValue = ref()
 const password = ref()
 const passwordConfirm = ref()
@@ -149,6 +149,12 @@ const passwordConfirm = ref()
 const prop = defineProps({
   accountData: { type: Object },
   ifMyself: { type: Boolean }
+})
+
+const accountInfo = ref(tempAccountInfo.value)
+
+watch(tempAccountInfo, () => {
+  accountInfo.value = tempAccountInfo.value
 })
 
 function handleCaptchaUpdated(value) {

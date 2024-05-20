@@ -24,7 +24,7 @@
       label="类型"
     />
     <el-table-column class="table-column" min-width="5%" prop="uid" label="发布者用户id" />
-    <el-table-column class="table-column" min-width="10%" prop="uid_name" label="发布者用户名" />
+    <el-table-column class="table-column" min-width="9%" prop="uid_name" label="发布者用户名" />
     <el-table-column
       class="table-column"
       sortable="custom"
@@ -40,7 +40,7 @@
       label="更新时间"
     />
 
-    <el-table-column min-width="13%" label="操作">
+    <el-table-column min-width="14%" label="操作">
       <template v-slot="scope">
         <el-button type="info" @click="showDetails(scope.row)">详细</el-button>
         <el-button type="warning" @click="deleteRow(scope.row)">删除</el-button>

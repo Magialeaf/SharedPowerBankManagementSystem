@@ -22,7 +22,7 @@
         @uploadSuccess="afterUploadImgSuccess"
       />
     </el-form-item>
-    <el-form-item label="状态">
+    <el-form-item label="状态" v-if="!ifNew">
       <el-select v-model="powerBankInfo.status" placeholder="请选择">
         <el-option
           v-for="(label, value) in spbConfigStore.getPowerBankStatusChoices()"

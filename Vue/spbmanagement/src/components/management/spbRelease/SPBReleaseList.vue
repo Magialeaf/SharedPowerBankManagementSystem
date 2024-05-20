@@ -10,7 +10,7 @@
     <el-table-column class="table-column" min-width="10%" prop="name" label="充电宝名称" />
     <el-table-column class="table-column" min-width="10%" label="充电宝图片">
       <template v-slot="scope">
-        <img :src="scope.row.img" alt="图片" style="width: 100px; height: 100px" />
+        <img :src="scope.row.img" alt="图片" style="width: 90px; height: 90px" />
       </template>
     </el-table-column>
     <el-table-column

@@ -11,7 +11,7 @@
     <el-table-column
       class="table-column"
       sortable="custom"
-      min-width="15%"
+      min-width="14%"
       prop="fee"
       label="费用（元）"
     />
@@ -36,7 +36,7 @@
       prop="pay_date"
       label="支付时间"
     />
-    <el-table-column class="table-column" min-width="10%" label="操作">
+    <el-table-column class="table-column" min-width="11%" label="操作">
       <template #default="{ row }">
         <el-button v-if="row.returned === false" type="success" @click="operation(row)"
           >归还</el-button

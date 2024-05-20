@@ -1,6 +1,6 @@
 <template>
   <div class="hot-partner box">
-    <div class="title partner-title">热门合作商户</div>
+    <div class="title partner-title">新合作商户</div>
     <div class="bubble-container">
       <Bubble
         v-for="(item, index) in merchantData"
@@ -14,7 +14,7 @@
     </div>
   </div>
   <div class="hot-product box">
-    <div class="title product-title">热门充电宝</div>
+    <div class="title product-title">新充电宝</div>
     <div class="bubble-container">
       <Bubble
         v-for="(item, index) in powerBankData"

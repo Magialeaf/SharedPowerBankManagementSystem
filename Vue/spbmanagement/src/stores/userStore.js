@@ -253,8 +253,8 @@ export const useAccountStore = defineStore('accountStore', () => {
 
   // 修改身份
   function updateIdentity(id, identity) {
-    const code = identityStore.getIdentityCode(identity)
-    const data = { identity: code }
+    const data = { identity: identity }
+    console.log(data)
     return updateUserIdentityAPI(id, constConditions.value, data)
       .then((res) => userStore.handleApiSuccess(res, true))
       .catch(handleApiError)

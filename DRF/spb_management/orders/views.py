@@ -16,7 +16,6 @@ from spb_management.router.response_data import response, ResponseCode
 from spb_management.utils.my_exception import validation_exception
 from spb_management.utils.page_operation import set_extra_page
 from users.models import Identity
-from my_celery.orders.tasks import check_charging_status
 
 # Create your views here.
 """
@@ -113,9 +112,7 @@ class PowerBankRentalView(CRUDInterface):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
-
             data = serializer.to_representation(serializer.instance)
-            check_charging_status.delay([data["power_bank"]])
             return response(ResponseCode.SUCCESS, "创建成功", data)
         except ValidationError as e:
             return validation_exception(e)
@@ -447,7 +444,6 @@ class UserOrderOperationView(CRUDInterface):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             data = serializer.to_representation(serializer.instance)
-            check_charging_status.delay(data["power_bank"])
             return response(ResponseCode.SUCCESS, "租用成功", data)
         except ValidationError as e:
             return validation_exception(e)

@@ -75,11 +75,13 @@ const errorHandle = (error) => {
         throw Error(response.data.message)
       /* console.log("访问太多次了"); $errorMsg("访问太多次了"); break; */
       case 500:
-        // jwtTokenStore.clearJwtToken()
-        // router.push('/enter/')
+        jwtTokenStore.clearJwtToken()
+        router.push('/enter/')
         throw Error('服务器遇到意外')
       /* console.log("服务器遇到意外"); $errorMsg("服务器遇到意外"); break; */
       case 502:
+        jwtTokenStore.clearJwtToken()
+        router.push('/enter/')
         throw Error('服务器无响应')
       /* console.log("服务器无响应"); $errorMsg("服务器无响应"); break; */
       default:

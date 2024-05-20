@@ -12,6 +12,7 @@ from power_bank.models import PowerBankInfo, StatusDescription
 from users.models import UserInfo
 from django.utils import timezone
 
+
 class PowerBankRentalSerializer(serializers.ModelSerializer):
     power_bank = serializers.PrimaryKeyRelatedField(
         queryset=PowerBankInfo.objects.all(), error_messages={'required': '请选择充电宝', 'null': "充电宝不能为空"})
@@ -29,15 +30,19 @@ class PowerBankRentalSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         try:
-            if validated_data.get('power_bank').status != StatusDescription.free:
+            if validated_data.get('power_bank').status != StatusDescription.free and validated_data.get('power_bank').status != StatusDescription.charging:
                 raise ValidationError("充电宝不可使用")
             elif validated_data.get('power_bank').electricity_percentage <= 5:
                 raise ValidationError("充电宝电量不足")
 
             validated_data['number'] = generate_unique_order_number()
             instance = PowerBankRentalInfo.objects.create(**validated_data)
-            instance.power_bank.status = 2
+            instance.power_bank.status = StatusDescription.borrowed
             instance.power_bank.save()
+
+            from my_celery.orders.tasks import check_charging_status, cancel_charging_task_by_power_bank_id
+            cancel_charging_task_by_power_bank_id(instance.power_bank.id)
+            check_charging_status.delay(instance.power_bank.id)
             return instance
         except IntegrityError as e:
             raise ValidationError(e)
@@ -62,12 +67,13 @@ class PowerBankRentalSerializer(serializers.ModelSerializer):
                 paid=False
             )
 
-            instance.power_bank.status = 0
+            instance.power_bank.status = StatusDescription.charging
             instance.power_bank.save()
             instance.save()  # 明确指定更新字段
 
-            from my_celery.orders.tasks import cancel_charging_task_by_power_bank_id
+            from my_celery.orders.tasks import charge_power_bank,cancel_charging_task_by_power_bank_id
             cancel_charging_task_by_power_bank_id(instance.power_bank.id)
+            charge_power_bank.delay(instance.power_bank.id)
             return instance
 
         raise serializers.ValidationError("更新失败")

@@ -74,7 +74,7 @@ export const useMerchantStore = defineStore('merchantList', () => {
   }
 
   // 创建商户
-  const createMerchant = (data = {}, ifRefresh = false) => {
+  const createMerchant = (data = {}, ifRefresh = true) => {
     return createMerchantAPI(data)
       .then((res) => handleApiSuccess(res, ifRefresh))
       .catch(handleApiError)
