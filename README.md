@@ -42,3 +42,14 @@ pip install Pyjwt
 pip install pycryptodome
 pip install pillow
 ```
+
+## 三、效果
+
+![image](https://github.com/Magialeaf/SharedPowerBankManagementSystem/assets/94749161/d9b4bfcc-785a-473f-9123-238c80eba768)
+
+![image](https://github.com/Magialeaf/SharedPowerBankManagementSystem/assets/94749161/1c428d2f-3b76-4307-b6f0-407281618bad)
+
+![image](https://github.com/Magialeaf/SharedPowerBankManagementSystem/assets/94749161/412264f3-e1d8-4cb9-b4d7-765f7e13d5fb)
+
+
+
